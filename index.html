@@ -1743,5 +1743,37 @@ function setDateISO(iso) {
 }
 </script>
 
+<script>/* slots-init */
+(function(){
+  function onReady(fn){ if(document.readyState!=='loading') fn(); else document.addEventListener('DOMContentLoaded', fn); }
+  onReady(function(){
+    var dateInput = document.getElementById('date');
+    var modeInput = document.getElementById('mode');
+    var slotsEl   = document.getElementById('slots');
+    var slotHelp  = document.getElementById('slotHelp');
+
+    try{ if(slotsEl){ slotsEl.innerHTML=''; } }catch(e){}
+
+    function safeRender(){
+      try { if (typeof renderSlots === 'function') { renderSlots(); } }
+      catch(e){ console.error(e); }
+    }
+
+    if (dateInput){
+      dateInput.addEventListener('change',  safeRender);
+      dateInput.addEventListener('input',   safeRender);
+    }
+    if (modeInput){
+      modeInput.addEventListener('change', safeRender);
+    }
+
+    // první načtení (když je předvyplněné datum)
+    if (dateInput && dateInput.value){
+      if (slotHelp) slotHelp.textContent = 'Načítám volné časy…';
+      safeRender();
+    }
+  });
+})();
+</script>
 </body>
 </html>
