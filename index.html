@@ -1603,92 +1603,74 @@ document.addEventListener("DOMContentLoaded", function () {
   if (!dateInput || !modeInput || !slotsEl || !slotInput) return;
 
   // Přepíšeme existující renderSlots() moderní verzí s GET → n8n
-  window.renderSlots = async function renderSlots(){
-    const dateStr = dateInput.value;
-    const mode = (modeInput.value || "remote");
-    const slotsBox = slotsEl;
-    const helpEl = slotHelp;
+  window.renderSlots = async function renderSlots() {
+  const slotHelp = document.getElementById('slotHelp');
+  if (slotHelp) slotHelp.textContent = 'Načítám volné časy…';
+  slotsEl.innerHTML = '';
+  slotInput.value = '';
 
-    slotsBox.innerHTML = "";
-    slotInput.value = "";
-    if (!dateStr) { if (helpEl) helpEl.textContent = ""; return; }
+  try {
+    const { requestedDate, resolvedDate, slots } =
+      await fetchSlots(dateInput.value, modeInput.value);
 
-    if (typeof window.hideGlobalError === "function") window.hideGlobalError();
-    slotsBox.innerHTML = '<p class="muted">Načítám volné časy…</p>';
-    if (helpEl) helpEl.textContent = 'Načítám…';
-
-    try {
-      if (typeof window.SLOTS_API === "undefined" || !window.SLOTS_API) {
-        slotsBox.innerHTML = "";
-        if (typeof window.showGlobalError === "function") window.showGlobalError("Sloty nelze načíst: SLOTS_API není nastaven.");
-        return;
+    // posun na nejbližší volný den + info pro uživatele
+    if (resolvedDate && resolvedDate !== dateInput.value) {
+      dateInput.value = resolvedDate;
+      if (typeof view !== 'undefined') {
+        try {
+          const d0 = new Date(resolvedDate);
+          view.y = d0.getFullYear();
+          view.m = d0.getMonth();
+          if (typeof renderCal === 'function') renderCal();
+        } catch(e){}
       }
-      const duration = (typeof window.SLOT_DURATION_MIN === 'number') ? window.SLOT_DURATION_MIN : 60;
-      const tz = window.USER_TZ || (Intl.DateTimeFormat().resolvedOptions().timeZone || 'Europe/Prague');
-      const params = new URLSearchParams({ date: dateStr, duration: String(duration), tz, mode });
-
-      console.log('[slots] GET', window.SLOTS_API, params.toString());
-    const res = await fetch(window.SLOTS_API + '?' + params.toString(), { method: 'GET' });
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      const data = await res.json();
-      const slots = (data && (data.slots || data.items || [])) || [];
-
-      slotsBox.innerHTML = "";
-      if (!slots.length) {
-        const p = document.createElement('p');
-        p.className = 'muted';
-        p.textContent = 'Pro zvolené datum nejsou volné časy.';
-        slotsBox.appendChild(p);
-        if (typeof window.showGlobalError === 'function') window.showGlobalError('Pro zvolené datum nejsou v kalendáři žádné volné sloty.');
-        return;
+      if (slotHelp) {
+        const d = new Date(resolvedDate);
+        slotHelp.textContent =
+          `Zvolený den není k dispozici. Nabízím nejbližší volné termíny pro ${d.toLocaleDateString('cs-CZ')}.`;
       }
+    } else {
+      if (slotHelp) slotHelp.textContent = '';
+    }
 
-      // vykreslení tlačítek slotů
-      slots.forEach(function(s){
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'slot';
-        btn.setAttribute('role','option');
-        btn.setAttribute('aria-pressed','false');
-        const label = s.label || s.start || s.time || '—';
-        const value = s.value || s.start || s.time || '';
-        btn.textContent = label;
-        btn.addEventListener('click', function(){
-          [].forEach.call(slotsBox.querySelectorAll('.slot'), function(b){ b.setAttribute('aria-pressed','false'); });
-          btn.setAttribute('aria-pressed','true');
-          slotInput.value = value;
-        });
-        slotsBox.appendChild(btn);
-      });
-    } catch (e) {
-      console.error(e);
-      slotsBox.innerHTML = "";
+    if (!slots.length) {
       const p = document.createElement('p');
       p.className = 'muted';
-      p.textContent = 'Nepodařilo se načíst sloty.';
-      slotsBox.appendChild(p);
-      if (typeof window.showGlobalError === 'function') window.showGlobalError('Načítání slotů z n8n selhalo.');
+      p.textContent = 'Žádné volné sloty pro zvolené datum.';
+      slotsEl.appendChild(p);
+      return;
     }
-  };
 
-  // Jistota: pokud by chyběly listenery, dopojíme je (nepřidáme duplicitně)
-  (function attachOnce(){
-    try {
-      // hlídej změnu data
-      if (!dateInput.__hasSlotChange) {
-        dateInput.addEventListener('change', function(){ window.renderSlots(); });
-        dateInput.__hasSlotChange = true;
-      }
-      // při změně Remote/Onsite znovu načti, pokud je datum
-      if (!modeInput.__hasModeChange) {
-        modeInput.addEventListener('change', function(){
-          if (dateInput.value) window.renderSlots();
-        });
-        modeInput.__hasModeChange = true;
-      }
-    } catch(e){}
-  })();
-})();
+    slots.forEach(s => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'slot';
+      btn.setAttribute('role','option');
+      btn.setAttribute('aria-pressed','false');
+
+      const label = s.label || s.start || s.time || '—';
+      const value = s.value || s.start || s.time || '';
+
+      btn.textContent = label;
+      btn.addEventListener('click', () => {
+        [...slotsEl.querySelectorAll('.slot')].forEach(b => b.setAttribute('aria-pressed','false'));
+        btn.setAttribute('aria-pressed','true');
+        slotInput.value = value;
+      });
+
+      slotsEl.appendChild(btn);
+    });
+  } catch (err) {
+    console.error(err);
+    if (slotHelp) slotHelp.textContent = '';
+    const p = document.createElement('p');
+    p.className = 'muted';
+    p.textContent = 'Nepodařilo se načíst sloty.';
+    slotsEl.appendChild(p);
+    if (typeof showGlobalError === 'function') showGlobalError('Načítání slotů z n8n selhalo.');
+  }
+}
+)();
 </script>
 <script id="slots-config">
   window.SLOTS_API = 'https://n8n.replikanti.xyz/webhook/8b1f7b37-e65d-4546-a84a-2c51e7e8cbf5';
