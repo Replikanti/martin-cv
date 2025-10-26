@@ -1012,209 +1012,511 @@
   </div>
 
   <script>
-(function(){
-  function ensureErrorBox(){
-    var box = document.getElementById('formError');
-    if (!box) {
-      var c = document.getElementById('contact') || document.body;
-      box = document.createElement('div');
-      box.id = 'formError';
-      box.className = 'notice notice--error';
-      c.appendChild(box);
+    const revealEls = document.querySelectorAll('.card, .step, .skill');
+    const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduce) {
+      revealEls.forEach(el => el.style.opacity = 1);
+    } else {
+      const io = new IntersectionObserver(entries => {
+        for (const e of entries) {
+          if (e.isIntersecting) {
+            e.target.animate(
+              [
+                { opacity: 0, transform: 'translateY(8px)' },
+                { opacity: 1, transform: 'translateY(0)' }
+              ],
+              {
+                duration: 420,
+                easing: 'cubic-bezier(.2,.7,.2,1)',
+                fill: 'forwards'
+              }
+            );
+            io.unobserve(e.target);
+          }
+        }
+      }, { threshold: 0.08 });
+      revealEls.forEach(el => io.observe(el));
     }
-    return box;
-  }
-  function esc(s){ return (s||'').replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
 
-  window.hideGlobalError = function(){
-    var box = document.getElementById('formError');
-    if (box) {
-      box.classList.add('hidden');
-      box.innerHTML = '';
+    const N8N_WEBHOOK_URL = 'https://n8n.replikanti.xyz/webhook/2dd3071a-0719-40e9-99ad-e246ce174fa1';
+
+    const dateField = document.getElementById('date');
+    const modal = document.getElementById('dateModal');
+    const calTitle = document.getElementById('calTitle');
+    const calGrid = document.getElementById('calGrid');
+    const calGridDOW = document.getElementById('calGridDOW');
+    const calPrev = document.getElementById('calPrev');
+    const calNext = document.getElementById('calNext');
+    const calToday = document.getElementById('calToday');
+    const calCancel = document.getElementById('calCancel');
+
+    const DOW = ['Po','Út','St','Čt','Pá','So','Ne'];
+    function pad(n) { return n.toString().padStart(2,'0'); }
+    function fmt(y,m,d) { return `${y}-${pad(m+1)}-${pad(d)}`; }
+
+    let view = (function() {
+      const now = new Date();
+      return { y: now.getFullYear(), m: now.getMonth() };
+    })();
+
+    function renderDOW() {
+      calGridDOW.innerHTML = '';
+      DOW.forEach(d => {
+        const el = document.createElement('div');
+        el.className = 'cal-dow';
+        el.textContent = d;
+        calGridDOW.appendChild(el);
+      });
     }
-  };
 
-  window.showGlobalError = function(reason){
-    var box = ensureErrorBox();
-    box.classList.remove('hidden');
-    box.innerHTML =
-      '<div class="error-box" role="alert" aria-live="assertive">' +
-      '  <strong>Oops, něco se nepovedlo.</strong>' +
-      (reason ? ('<div class="muted" style="margin:.25rem 0 .5rem 0;">'+ esc(reason) +'</div>') : '') +
-      '  <div class="error-actions">' +
-      '    <a class="btn-ghost btn-mail" href="mailto:mholy1983@gmail.com">' +
-      '      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2Zm0 4-8 5L4 8V6l8 5 8-5Z"/></svg>' +
-      '      Napište mi' +
-      '    </a>' +
-      '    <a class="btn-ghost btn-tel" href="tel:+420792305456">' +
-      '      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.6 11.6 0 0 0 3.6.6 1 1 0 0 1 1 1v3.7a1 1 0 0 1-1 1A17.6 17.6 0 0 1 2.5 5a1 1 0 0 1 1-1H7a1 1 0 0 1 1 1 11.6 11.6 0 0 0 .6 3.6 1 1 0 0 1-.25 1Z"/></svg>' +
-      '      Zavolejte mi' +
-      '    </a>' +
-      '  </div>' +
-      '</div>';
-    try { box.scrollIntoView({behavior:'smooth', block:'center'}); } catch(e){}
-  };
-})();
-</script>
-<script>
-(function(){
-  function ensureErrorBox(){
-    var box = document.getElementById('formError');
-    if (!box) {
-      var c = document.getElementById('contact') || document.body;
-      box = document.createElement('div');
-      box.id = 'formError';
-      box.className = 'notice notice--error';
-      c.appendChild(box);
+    function renderCal() {
+      const first = new Date(view.y, view.m, 1);
+      const last = new Date(view.y, view.m + 1, 0);
+      calTitle.textContent = first.toLocaleString('cs-CZ', { month: 'long', year: 'numeric' });
+      calGrid.innerHTML = '';
+
+      let start = (first.getDay() + 6) % 7;
+      for (let i = 0; i < start; i++) {
+        const s = document.createElement('div');
+        calGrid.appendChild(s);
+      }
+
+      for (let d = 1; d <= last.getDate(); d++) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'cal-day';
+        btn.textContent = d;
+        const iso = fmt(view.y, view.m, d);
+        btn.dataset.iso = iso;
+        btn.addEventListener('click', () => {
+          dateField.value = iso;
+          closeCal();
+          renderSlots();
+        });
+        calGrid.appendChild(btn);
+      }
     }
-    return box;
-  }
-  function esc(s){ return (s||'').replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
 
-  window.hideGlobalError = function(){
-    var box = document.getElementById('formError');
-    if (box) { box.classList.add('hidden'); box.innerHTML = ''; }
-  };
-
-  window.showGlobalError = function(reason){
-    var box = ensureErrorBox();
-    box.classList.remove('hidden');
-    box.innerHTML =
-      '<div class="error-box" role="alert" aria-live="assertive">' +
-      '  <strong>Oops, něco se nepovedlo.</strong>' +
-      (reason ? ('<div class="muted" style="margin:.25rem 0 .5rem 0;">'+ esc(reason) +'</div>') : '') +
-      '  <div class="error-actions">' +
-      '    <a class="btn-ghost btn-mail" href="mailto:mholy1983@gmail.com">' +
-      '      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2Zm0 4-8 5L4 8V6l8 5 8-5Z"/></svg>' +
-      '      Napište mi' +
-      '    </a>' +
-      '    <a class="btn-ghost btn-tel" href="tel:+420792305456">' +
-      '      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.6 11.6 0 0 0 3.6.6 1 1 0 0 1 1 1v3.7a1 1 0 0 1-1 1A17.6 17.6 0 0 1 2.5 5a1 1 0 0 1 1-1H7a1 1 0 0 1 1 1 11.6 11.6 0 0 0 .6 3.6 1 1 0 0 1-.25 1Z"/></svg>' +
-      '      Zavolejte mi' +
-      '    </a>' +
-      '  </div>' +
-      '</div>';
-    try { box.scrollIntoView({behavior:'smooth', block:'center'}); } catch(e){}
-  };
-})();
-</script>
-<script>
-  window.SLOTS_API = 'https://n8n.replikanti.xyz/webhook/8b1f7b37-e65d-4546-a84a-2c51e7e8cbf5';
-  window.SLOT_DURATION_MIN = 60; 
-  window.USER_TZ = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Europe/Prague';
-</script>
-<script>
-(function(){
-  var dateInput = document.getElementById('date');
-  var modeInput = document.getElementById('mode');
-  var slotsEl   = document.getElementById('slots');
-  var slotInput = document.getElementById('slot');
-  var slotHelp  = document.getElementById('slotHelp');
-
-  if (!dateInput || !modeInput || !slotsEl || !slotInput) return;
-
-  var SLOTS_API = (window.SLOTS_API) || null;
-  var USER_TZ = window.USER_TZ || (Intl.DateTimeFormat().resolvedOptions().timeZone || 'Europe/Prague');
-  var SLOT_DURATION_MIN = (typeof window.SLOT_DURATION_MIN === 'number') ? window.SLOT_DURATION_MIN : 60;
-
-  function clearSlots(message){
-    slotsEl.innerHTML = '';
-    slotInput.value = '';
-    if (slotHelp) slotHelp.textContent = message || '';
-  }
-
-  function showErr(msg){
-    // hezký globální error, pokud existuje helper
-    if (typeof window.showGlobalError === 'function') {
-      window.showGlobalError(msg);
-      return;
+    function openCal() {
+      modal.setAttribute('open', '');
+      renderDOW();
+      renderCal();
     }
-    // jinak aspoň jednoduchá hláška do DOM
-    var box = document.createElement('div');
-    box.style.border = '2px solid #ef4444';
-    box.style.borderRadius = '12px';
-    box.style.padding = '10px';
-    box.style.marginTop = '8px';
-    box.innerHTML = '<strong style="color:#ef4444">Chyba:</strong> ' + (msg||'') +
-      '<div style="margin-top:6px;display:flex;gap:8px;flex-wrap:wrap">' +
-      '<a href="mailto:mholy1983@gmail.com" style="border:1px solid #1d4ed8;padding:8px 10px;border-radius:10px;text-decoration:none;color:#1d4ed8;font-weight:600">Napište mi</a>' +
-      '<a href="tel:+420792305456" style="border:1px solid #16a34a;padding:8px 10px;border-radius:10px;text-decoration:none;color:#16a34a;font-weight:600">Zavolejte mi</a>' +
-      '</div>';
-    (document.getElementById('formError') || slotsEl.parentElement || document.body).appendChild(box);
-  }
+    function closeCal() {
+      modal.removeAttribute('open');
+    }
 
-  async function fetchAndRenderSlots(dateStr){
-    if (!dateStr) { clearSlots(''); return; }
-    if (!SLOTS_API) { clearSlots(''); showErr('Sloty nelze načíst: SLOTS_API není nastaven.'); return; }
+    dateField.addEventListener('focus', openCal);
+    dateField.addEventListener('click', openCal);
 
-    slotsEl.innerHTML = '<p class="muted">Načítám volné časy…</p>';
-    if (slotHelp) slotHelp.textContent = 'Načítám…';
-
-    var params = new URLSearchParams({
-      date: dateStr,
-      duration: String(SLOT_DURATION_MIN),
-      tz: USER_TZ,
-      mode: (modeInput.value || 'remote')
+    calPrev.addEventListener('click', () => {
+      if (--view.m < 0) {
+        view.m = 11;
+        view.y--;
+      }
+      renderCal();
     });
 
-    try {
-      var res = await fetch(SLOTS_API + '?' + params.toString(), { method: 'GET' });
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      var data = await res.json();
-      var slots = (data && data.slots) || [];
+    calNext.addEventListener('click', () => {
+      if (++view.m > 11) {
+        view.m = 0;
+        view.y++;
+      }
+      renderCal();
+    });
 
-      if (!slots.length) {
-        clearSlots('');
-        var empty = document.createElement('p');
-        empty.className = 'muted';
-        empty.textContent = 'Pro zvolené datum nejsou volné časy.';
-        slotsEl.appendChild(empty);
+    calToday.addEventListener('click', () => {
+      const n = new Date();
+      view.y = n.getFullYear();
+      view.m = n.getMonth();
+      renderCal();
+    });
+
+    calCancel.addEventListener('click', closeCal);
+
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeCal();
+    });
+
+    function generateSlots(dateStr, mode) {
+      if (!dateStr) return [];
+      const d = new Date(dateStr + 'T00:00:00');
+      const day = d.getDay();
+      const base = mode === 'onsite' ? ['10:00','11:00','14:00','15:00'] : ['10:00','11:00','13:00','16:00'];
+      if (day === 0 || day === 6) return [];
+      return base.map(t => ({ label: t, value: `${dateStr} ${t}` }));
+    }
+
+    const form = document.getElementById('contactForm');
+    const status = document.getElementById('formStatus');
+    const slotsEl = document.getElementById('slots');
+    const slotInput = document.getElementById('slot');
+    const dateInput = document.getElementById('date');
+    const modeInput = document.getElementById('mode');
+    const onsiteGroup = document.getElementById('onsiteGroup');
+    const thanks = document.getElementById('formThanks');
+
+    // Nominatim autocomplete
+    const locationInput = document.getElementById('location');
+    const suggestionsEl = document.getElementById('locationSuggestions');
+    let searchTimeout;
+
+    locationInput?.addEventListener('input', (e) => {
+      const query = e.target.value.trim();
+      clearTimeout(searchTimeout);
+      
+      if (query.length < 3) {
+        suggestionsEl.classList.add('hidden');
+        suggestionsEl.innerHTML = '';
         return;
       }
 
-      clearSlots('Nalezeno: ' + slots.length);
-      slots.forEach(function(s){
-        var btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'slot';
-        btn.setAttribute('role','option');
-        btn.setAttribute('aria-pressed','false');
-        btn.textContent = s.label || s.start || '—';
-        btn.addEventListener('click', function(){
-          [].forEach.call(slotsEl.querySelectorAll('.slot'), function(b){ b.setAttribute('aria-pressed','false'); });
-          btn.setAttribute('aria-pressed','true');
-          slotInput.value = s.start || s.value || '';
-        });
-        slotsEl.appendChild(btn);
-      });
-    } catch(e) {
-      console.error(e);
-      clearSlots('');
-      var p = document.createElement('p');
-      p.className = 'muted';
-      p.textContent = 'Nepodařilo se načíst sloty.';
-      slotsEl.appendChild(p);
-      showErr('Načítání slotů z n8n selhalo.');
+      searchTimeout = setTimeout(async () => {
+        try {
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=cz&limit=5`,
+            {
+              headers: {
+                'User-Agent': 'MartinHolyPortfolio/1.0'
+              }
+            }
+          );
+          const results = await response.json();
+          
+          if (results.length === 0) {
+            suggestionsEl.classList.add('hidden');
+            return;
+          }
+
+          suggestionsEl.innerHTML = '';
+          results.forEach(result => {
+            const div = document.createElement('div');
+            div.className = 'suggestion-item';
+            div.textContent = result.display_name;
+            div.addEventListener('click', () => {
+              locationInput.value = result.display_name;
+              suggestionsEl.classList.add('hidden');
+            });
+            suggestionsEl.appendChild(div);
+          });
+          suggestionsEl.classList.remove('hidden');
+        } catch (err) {
+          console.error('Nominatim error:', err);
+        }
+      }, 400);
+    });
+
+    // Skrytí návrhů při kliknutí mimo
+    document.addEventListener('click', (e) => {
+      if (!locationInput.contains(e.target) && !suggestionsEl.contains(e.target)) {
+        suggestionsEl.classList.add('hidden');
+      }
+    });
+
+    function renderSlots() {
+  const slots = generateSlots(dateInput.value, modeInput.value);
+  slotsEl.innerHTML = "";
+  slotInput.value = "";
+  if (!slots.length) {
+    const p = document.createElement("p");
+    p.className = "muted";
+    p.textContent = "Žádné volné sloty pro zvolené datum.";
+    slotsEl.appendChild(p);
+    return;
+  }
+  slots.forEach(s => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "slot";
+    btn.setAttribute("role","option");
+    btn.textContent = s.label;
+    btn.addEventListener("click", () => {
+      slotsEl.querySelectorAll(".slot").forEach(b => b.setAttribute("aria-pressed","false"));
+      btn.setAttribute("aria-pressed","true");
+      slotInput.value = s.value;
+    });
+    slotsEl.appendChild(btn);
+  });
+}
+
+// listenery MUSÍ být mimo funkci
+
+dateInput.addEventListener("change", renderSlots);
+modeInput.addEventListener("change", () => {
+  const isOnsite = modeInput.value === "onsite";
+  onsiteGroup.classList.toggle("hidden", !isOnsite);
+  const locationField = document.getElementById("location");
+  if (locationField) {
+    if (isOnsite) locationField.setAttribute("required", ""); else locationField.removeAttribute("required");
+  }
+  renderSlots();
+});
+    function nextBusinessISO() {
+      const d = new Date();
+      d.setDate(d.getDate() + 1);
+      if (d.getDay() === 6) d.setDate(d.getDate() + 2);
+      if (d.getDay() === 0) d.setDate(d.getDate() + 1);
+      return d.toISOString().slice(0,10);
     }
+
+    function initDate() {
+      const iso = nextBusinessISO();
+      dateInput.value = iso;
+      renderSlots();
+      onsiteGroup.classList.toggle('hidden', modeInput.value !== 'onsite');
+    }
+
+    form?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      status.textContent = 'Odesílám…';
+
+      if (document.getElementById('homepage').value) return;
+
+      // validace formuláře
+      const nameField = document.getElementById('name');
+      const emailField = document.getElementById('email');
+      const dateField = document.getElementById('date');
+      const slotField = document.getElementById('slot');
+      const messageField = document.getElementById('message');
+
+      if (!nameField.value.trim()) {
+        status.textContent = 'Vyplňte prosím jméno.';
+        nameField.focus();
+        return;
+      }
+
+      const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailField.value.trim() || !emailPattern.test(emailField.value.trim())) {
+        status.textContent = 'Vyplňte prosím platnou emailovou adresu.';
+        emailField.focus();
+        return;
+      }
+
+      if (!dateField.value) {
+        status.textContent = 'Vyberte prosím datum.';
+        dateField.focus();
+        return;
+      }
+
+      if (!slotField.value) {
+        status.textContent = 'Vyberte prosím časový slot.';
+        return;
+      }
+
+      if (!messageField.value.trim()) {
+        status.textContent = 'Vyplňte prosím zprávu.';
+        messageField.focus();
+        return;
+      }
+
+      const phoneField = document.getElementById('phone');
+      if (!phoneField.value.trim()) {
+        status.textContent = 'Vyplňte prosím telefonní číslo.';
+        phoneField.focus();
+        return;
+      }
+
+      const locationField = document.getElementById('location');
+      if (modeInput.value === 'onsite' && !locationField.value.trim()) {
+        status.textContent = 'Pro on-site schůzku vyplňte prosím místo.';
+        locationField.focus();
+        return;
+      }
+
+      const data = Object.fromEntries(new FormData(form));
+      const errorNotice = document.getElementById('formError');
+      const contactSub = document.getElementById('contactSub');
+
+      try {
+        if (N8N_WEBHOOK_URL) {
+          await fetch(N8N_WEBHOOK_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+          });
+        } else {
+          console.log('Demo data:', data);
+        }
+
+        form.classList.add('hidden');
+        contactSub.classList.add('hidden');
+        thanks.classList.remove('hidden');
+        errorNotice.classList.add('hidden');
+      } catch (err) {
+        console.error(err);
+        status.textContent = '';
+        errorNotice.classList.remove('hidden');
+        thanks.classList.add('hidden');
+      }
+    });
+
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    initDate();
+  </script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  var dateField = document.getElementById("date");
+  var modal = document.getElementById("dateModal");
+
+  // Bezpečné dopřipojení listenerů – jen pokud prvky existují
+  if (dateField && modal) {
+    dateField.addEventListener("focus", openCalSafe);
+    dateField.addEventListener("click", openCalSafe);
+    dateField.addEventListener("keydown", function(e){
+      if (e.key === "Enter" || e.key === " " || e.code === "Space") { e.preventDefault(); openCalSafe(); }
+    });
   }
 
-  // Po potvrzení data náš kalendář fallback už volá: dateInput.dispatchEvent(new Event('change'))});
-  // Při změně Remote/Onsite refresh pro již vybrané datum});
-})();
+  // Univerzální otevření modalu pro <div class="modal"> i <dialog>
+  function openCalSafe() {
+    if (!modal) return;
+    try {
+      // agresivní zviditelnění (přebije display:none, visibility:hidden, opacity:0, pointer-events:none)
+      modal.classList.remove("hidden");
+      modal.classList.add("modalopen");
+      modal.style.display = "grid";
+      modal.style.visibility = "visible";
+      modal.style.opacity = "1";
+      modal.style.pointerEvents = "auto";
+      modal.setAttribute("aria-hidden", "false");
+
+      // pokud máš vlastní funkce kalendáře, bezpečně je zavoláme
+      try { if (typeof renderDOW === "function") renderDOW(); } catch(e) {}
+      try { if (typeof renderCal === "function") renderCal(); } catch(e) {}
+
+      // podpora <dialog>
+      if (modal.tagName && modal.tagName.toLowerCase() === "dialog") {
+        modal.setAttribute("open", "");
+        if (modal.showModal) { try { modal.showModal(); } catch(e) {} }
+      }
+    } catch(e) { console.error(e); }
+  }
+});
 </script>
 <script>
 (function(){
   var dateInput = document.getElementById('date');
-  var modeInput = document.getElementById('mode');
-  if (!dateInput || !modeInput || typeof fetchAndRenderSlots !== 'function') return;
+  var modal = document.getElementById('dateModal');
+  var grid = document.getElementById('calGrid');
+  var title = document.getElementById('calTitle');
+  var btnToday = document.getElementById('calToday');
+  var btnCancel = document.getElementById('calCancel');
+  var actions = document.querySelector('#dateModal .cal-actions');
 
-  dateInput.addEventListener('change', function(){
-    fetchAndRenderSlots(dateInput.value);
-  });
+  if (!dateInput || !modal) return;
 
-  modeInput.addEventListener('change', function(){
-    if (dateInput.value) fetchAndRenderSlots(dateInput.value);
-  });
+  // Přidat "Potvrdit", pokud chybí
+  var btnConfirm = document.getElementById('calConfirm');
+  if (!btnConfirm && actions) {
+    btnConfirm = document.createElement('button');
+    btnConfirm.id = 'calConfirm';
+    btnConfirm.type = 'button';
+    btnConfirm.className = 'btn primary';
+    btnConfirm.textContent = 'Potvrdit';
+    actions.appendChild(btnConfirm);
+  }
+
+  // Interní stav vybraného ISO data
+  var pickedISO = null;
+
+  // Mapování CZ měsíců pro případ, že nemáme data-atributy
+  var czMonths = {
+    'leden':1,'únor':2,'březen':3,'duben':4,'květen':5,'červen':6,
+    'červenec':7,'srpen':8,'září':9,'říjen':10,'listopad':11,'prosinec':12
+  };
+
+  function pad(n){ return String(n).padStart(2,'0'); }
+
+  function deriveISOFromCell(btn){
+    // 1) preferuj data-iso, pokud je vygenerované tvou renderCal()
+    var iso = btn.getAttribute('data-iso');
+    if (iso) return iso;
+
+    // 2) fallback: z calTitle "říjen 2025" a čísla dne odvoď ISO
+    if (!title) return null;
+    var txt = (title.textContent || title.innerText || '').trim().toLowerCase();
+    var m = txt.match(/(leden|únor|březen|duben|květen|červen|červenec|srpen|září|říjen|listopad|prosinec)\s+(\d{4})/i);
+    if (!m) return null;
+    var month = czMonths[m[1].toLowerCase()];
+    var year = parseInt(m[2], 10);
+    var day = parseInt(btn.textContent, 10);
+    if (!month || !year || !day) return null;
+    return year + '-' + pad(month) + '-' + pad(day);
+  }
+
+  function highlight(btn){
+    if (!grid) return;
+    Array.prototype.forEach.call(grid.querySelectorAll('.cal-day.selected'), function(el){
+      el.classList.remove('selected');
+    });
+    btn.classList.add('selected');
+  }
+
+  function closeModal(){
+    // naše bezpečné uzavření div.modal
+    modal.classList.remove('modalopen');
+    modal.style.display = '';
+    modal.style.visibility = '';
+    modal.style.opacity = '';
+    modal.style.pointerEvents = '';
+    modal.setAttribute('aria-hidden','true');
+  }
+
+  // Delegace kliknutí na dny
+  if (grid) {
+    grid.addEventListener('click', function(e){
+      var t = e.target;
+      if (!t) return;
+      if (!t.classList.contains('cal-day')) return;
+      var iso = deriveISOFromCell(t);
+      if (!iso) return;
+      pickedISO = iso;
+      highlight(t);
+    });
+  }
+
+  // Dnes
+  if (btnToday) {
+    btnToday.addEventListener('click', function(){
+      var today = new Date();
+      var iso = today.toISOString().slice(0,10);
+      pickedISO = iso;
+      // zvýraznit den v mřížce (pokud existuje odpovídající button)
+      if (grid) {
+        var cand = Array.prototype.find.call(grid.querySelectorAll('.cal-day'), function(b){
+          return (b.getAttribute('data-iso') === iso) || (b.textContent.trim() === String(today.getDate()));
+        });
+        if (cand) highlight(cand);
+      }
+    });
+  }
+
+  // Zrušit
+  if (btnCancel) {
+    btnCancel.addEventListener('click', function(){
+      closeModal();
+    });
+  }
+
+  // Potvrdit – nastaví <input id="date"> a načte sloty
+  if (btnConfirm) {
+    btnConfirm.addEventListener('click', function(){
+      if (!pickedISO) {
+        // pokud uživatel neklikl na den, ale chce potvrdit, zkus použít dnešek
+        pickedISO = pickedISO || new Date().toISOString().slice(0,10);
+      }
+      if (pickedISO) {
+        dateInput.value = pickedISO;
+        // vyvolej změnu → ať na to reaguje existující logika (renderSlots apod.)
+        try { dateInput.dispatchEvent(new Event('change')); } catch(e) {}
+      }
+      closeModal();
+    });
+  }
+
+  // Pokud máš "otevírače" (focus/click) jinde, nevadí; tohle je fallback.
+  // Když se modal otevře jinde (třeba openCalSafe), počítáme s tím, že renderDOW/renderCal už proběhne.
 })();
 </script>
 <script>
