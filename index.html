@@ -1181,21 +1181,44 @@
     });
 
     function renderSlots() {
-      const slots = generateSlots(dateInput.value, modeInput.value);
-      slotsEl.innerHTML = '';
-      slotInput.value = '';
-      if (!slots.length) {
-        const p = document.createElement('p');
-        p.className = 'muted';
-        p.textContent = 'Žádné volné sloty pro zvolené datum.';
-        slotsEl.appendChild(p);
-        return;
-      }
-      dateInput.addEventListener('change', renderSlots);
-    modeInput.addEventListener('change', () => {
-      const isOnsite = modeInput.value === 'onsite';
-      onsiteGroup.classList.toggle('hidden', !isOnsite);
-      const locationField = document.getElementById('location');
+  const slots = generateSlots(dateInput.value, modeInput.value);
+  slotsEl.innerHTML = "";
+  slotInput.value = "";
+  if (!slots.length) {
+    const p = document.createElement("p");
+    p.className = "muted";
+    p.textContent = "Žádné volné sloty pro zvolené datum.";
+    slotsEl.appendChild(p);
+    return;
+  }
+  slots.forEach(s => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "slot";
+    btn.setAttribute("role","option");
+    btn.textContent = s.label;
+    btn.addEventListener("click", () => {
+      slotsEl.querySelectorAll(".slot").forEach(b => b.setAttribute("aria-pressed","false"));
+      btn.setAttribute("aria-pressed","true");
+      slotInput.value = s.value;
+    });
+    slotsEl.appendChild(btn);
+  });
+}
+
+// listenery MUSÍ být mimo funkci
+
+dateInput.addEventListener("change", renderSlots);
+modeInput.addEventListener("change", () => {
+  const isOnsite = modeInput.value === "onsite";
+  onsiteGroup.classList.toggle("hidden", !isOnsite);
+  const locationField = document.getElementById("location");
+  if (locationField) {
+    if (isOnsite) locationField.setAttribute("required", ""); else locationField.removeAttribute("required");
+  }
+  renderSlots();
+});
+const locationField = document.getElementById('location');
       if (locationField) {
         if (isOnsite) {
           locationField.setAttribute('required', '');
