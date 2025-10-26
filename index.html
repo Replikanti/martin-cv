@@ -1218,17 +1218,6 @@ modeInput.addEventListener("change", () => {
   }
   renderSlots();
 });
-const locationField = document.getElementById('location');
-      if (locationField) {
-        if (isOnsite) {
-          locationField.setAttribute('required', '');
-        } else {
-          locationField.removeAttribute('required');
-        }
-      }
-      renderSlots();
-    });
-
     function nextBusinessISO() {
       const d = new Date();
       d.setDate(d.getDate() + 1);
