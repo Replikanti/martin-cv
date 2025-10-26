@@ -993,7 +993,8 @@
             <label>Volné časové sloty</label>
             <div id="slots" class="slots" role="listbox" aria-label="Dostupné termíny"></div>
             <input type="hidden" id="slot" name="slot" required>
-          </div>
+          
+          <div id="slotHelp" class="muted" aria-live="polite"></div></div>
           <div>
             <label for="message">Zpráva</label>
             <textarea id="message" name="message" placeholder="Krátký kontext, scope a očekávání" required></textarea>
@@ -1738,5 +1739,27 @@ document.addEventListener("DOMContentLoaded", function () {
   };
 })();
 </script>
+
+<script>
+function formatCzDate(iso) {
+  try {
+    const d = new Date(iso + 'T00:00:00');
+    return d.toLocaleDateString('cs-CZ', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' });
+  } catch(e) { return iso; }
+}
+function setDateISO(iso) {
+  try {
+    var dateInput = document.getElementById('date');
+    if (dateInput) dateInput.value = iso;
+    if (typeof view !== 'undefined') {
+      const d = new Date(iso + 'T00:00:00');
+      view.y = d.getFullYear();
+      view.m = d.getMonth();
+      if (typeof renderCal === 'function') renderCal();
+    }
+  } catch(e){}
+}
+</script>
+
 </body>
 </html>
