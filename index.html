@@ -622,6 +622,15 @@
     opacity: 1 !important;
     pointer-events: auto !important;
   }
+
+  /* Calendar UX: selected day highlight + strong modal override */
+  .cal-day.selected { outline: 2px solid currentColor; border-color: transparent; }
+  .modal.modalopen {
+    display: grid !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+  }
 </style>
 </head>
 <body>
@@ -912,6 +921,10 @@
           <div>
             <label for="phone">Telefonní číslo</label>
             <input id="phone" name="phone" type="tel" autocomplete="tel" required>
+          <div>
+            <label for="company">Název firmy</label>
+            <input id="company" name="company" type="text" autocomplete="organization" required>
+          </div>
           </div>
           <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 12px">
             <div>
@@ -1360,6 +1373,131 @@ document.addEventListener("DOMContentLoaded", function () {
     } catch(e) { console.error(e); }
   }
 });
+</script>
+<script>
+(function(){
+  var dateInput = document.getElementById('date');
+  var modal = document.getElementById('dateModal');
+  var grid = document.getElementById('calGrid');
+  var title = document.getElementById('calTitle');
+  var btnToday = document.getElementById('calToday');
+  var btnCancel = document.getElementById('calCancel');
+  var actions = document.querySelector('#dateModal .cal-actions');
+
+  if (!dateInput || !modal) return;
+
+  // Přidat "Potvrdit", pokud chybí
+  var btnConfirm = document.getElementById('calConfirm');
+  if (!btnConfirm && actions) {
+    btnConfirm = document.createElement('button');
+    btnConfirm.id = 'calConfirm';
+    btnConfirm.type = 'button';
+    btnConfirm.className = 'btn primary';
+    btnConfirm.textContent = 'Potvrdit';
+    actions.appendChild(btnConfirm);
+  }
+
+  // Interní stav vybraného ISO data
+  var pickedISO = null;
+
+  // Mapování CZ měsíců pro případ, že nemáme data-atributy
+  var czMonths = {
+    'leden':1,'únor':2,'březen':3,'duben':4,'květen':5,'červen':6,
+    'červenec':7,'srpen':8,'září':9,'říjen':10,'listopad':11,'prosinec':12
+  };
+
+  function pad(n){ return String(n).padStart(2,'0'); }
+
+  function deriveISOFromCell(btn){
+    // 1) preferuj data-iso, pokud je vygenerované tvou renderCal()
+    var iso = btn.getAttribute('data-iso');
+    if (iso) return iso;
+
+    // 2) fallback: z calTitle "říjen 2025" a čísla dne odvoď ISO
+    if (!title) return null;
+    var txt = (title.textContent || title.innerText || '').trim().toLowerCase();
+    var m = txt.match(/(leden|únor|březen|duben|květen|červen|červenec|srpen|září|říjen|listopad|prosinec)\s+(\d{4})/i);
+    if (!m) return null;
+    var month = czMonths[m[1].toLowerCase()];
+    var year = parseInt(m[2], 10);
+    var day = parseInt(btn.textContent, 10);
+    if (!month || !year || !day) return null;
+    return year + '-' + pad(month) + '-' + pad(day);
+  }
+
+  function highlight(btn){
+    if (!grid) return;
+    Array.prototype.forEach.call(grid.querySelectorAll('.cal-day.selected'), function(el){
+      el.classList.remove('selected');
+    });
+    btn.classList.add('selected');
+  }
+
+  function closeModal(){
+    // naše bezpečné uzavření div.modal
+    modal.classList.remove('modalopen');
+    modal.style.display = '';
+    modal.style.visibility = '';
+    modal.style.opacity = '';
+    modal.style.pointerEvents = '';
+    modal.setAttribute('aria-hidden','true');
+  }
+
+  // Delegace kliknutí na dny
+  if (grid) {
+    grid.addEventListener('click', function(e){
+      var t = e.target;
+      if (!t) return;
+      if (!t.classList.contains('cal-day')) return;
+      var iso = deriveISOFromCell(t);
+      if (!iso) return;
+      pickedISO = iso;
+      highlight(t);
+    });
+  }
+
+  // Dnes
+  if (btnToday) {
+    btnToday.addEventListener('click', function(){
+      var today = new Date();
+      var iso = today.toISOString().slice(0,10);
+      pickedISO = iso;
+      // zvýraznit den v mřížce (pokud existuje odpovídající button)
+      if (grid) {
+        var cand = Array.prototype.find.call(grid.querySelectorAll('.cal-day'), function(b){
+          return (b.getAttribute('data-iso') === iso) || (b.textContent.trim() === String(today.getDate()));
+        });
+        if (cand) highlight(cand);
+      }
+    });
+  }
+
+  // Zrušit
+  if (btnCancel) {
+    btnCancel.addEventListener('click', function(){
+      closeModal();
+    });
+  }
+
+  // Potvrdit – nastaví <input id="date"> a načte sloty
+  if (btnConfirm) {
+    btnConfirm.addEventListener('click', function(){
+      if (!pickedISO) {
+        // pokud uživatel neklikl na den, ale chce potvrdit, zkus použít dnešek
+        pickedISO = pickedISO || new Date().toISOString().slice(0,10);
+      }
+      if (pickedISO) {
+        dateInput.value = pickedISO;
+        // vyvolej změnu → ať na to reaguje existující logika (renderSlots apod.)
+        try { dateInput.dispatchEvent(new Event('change')); } catch(e) {}
+      }
+      closeModal();
+    });
+  }
+
+  // Pokud máš "otevírače" (focus/click) jinde, nevadí; tohle je fallback.
+  // Když se modal otevře jinde (třeba openCalSafe), počítáme s tím, že renderDOW/renderCal už proběhne.
+})();
 </script>
 </body>
 </html>
