@@ -594,7 +594,35 @@
         break-inside: avoid;
       }
     }
-  </style>
+  /* Fallback pro modální kalendář */
+  .modalopen { display: grid !important; }
+  
+  /* Fallback pro modální kalendář */
+  .modalopen { display: grid !important; }
+
+  /* Silný override pro otevřený modal */
+  .modal.modalopen {
+    display: grid !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+  }
+
+  /* Silný override pro otevřený modal */
+  .modal.modalopen {
+    display: grid !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+  }
+  /* Silný override pro otevřený modal */
+  .modal.modalopen {
+    display: grid !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+  }
+</style>
 </head>
 <body>
   <header>
@@ -1281,5 +1309,40 @@
 
     initDate();
   </script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  var dateField = document.getElementById("date");
+  var modal = document.getElementById("dateModal");
+
+  // Bezpečné dopřipojení listenerů – jen pokud prvky existují
+  if (dateField && modal) {
+    dateField.addEventListener("focus", openCalSafe);
+    dateField.addEventListener("click", openCalSafe);
+    dateField.addEventListener("keydown", function(e){
+      if (e.key === "Enter" || e.key === " " || e.code === "Space") { e.preventDefault(); openCalSafe(); }
+    });
+  }
+
+  // Univerzální otevření modalu pro <dialog> i pro <div class="modal">
+  function openCalSafe() {
+    if (!modal) return;
+    try {
+      // agresivní zviditelnění (přebije display:none, visibility:hidden, opacity:0, pointer-events:none)
+      modal.classList.remove('hidden');
+      modal.classList.add('modalopen');
+      modal.style.display = 'grid';
+      modal.style.visibility = 'visible';
+      modal.style.opacity = '1';
+      modal.style.pointerEvents = 'auto';
+      modal.setAttribute('aria-hidden', 'false');
+
+      if (modal.tagName && modal.tagName.toLowerCase() === "dialog") {
+        modal.setAttribute("open", "");
+        if (modal.showModal) { try { modal.showModal(); } catch(e) {} }
+      }
+    } catch(e) { console.error(e); }
+  }
+});
+</script>
 </body>
 </html>
