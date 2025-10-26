@@ -1328,17 +1328,17 @@ document.addEventListener("DOMContentLoaded", function () {
     if (!modal) return;
     try {
       // agresivní zviditelnění (přebije display:none, visibility:hidden, opacity:0, pointer-events:none)
-      modal.classList.remove('hidden');
-      modal.classList.add('modalopen');
-      modal.style.display = 'grid';
-      modal.style.visibility = 'visible';
-      modal.style.opacity = '1';
-      modal.style.pointerEvents = 'auto';
-      modal.setAttribute('aria-hidden', 'false');
+      modal.classList.remove("hidden");
+      modal.classList.add("modalopen");
+      modal.style.display = "grid";
+      modal.style.visibility = "visible";
+      modal.style.opacity = "1";
+      modal.style.pointerEvents = "auto";
+      modal.setAttribute("aria-hidden", "false");
 
       // pokud máš vlastní funkce kalendáře, bezpečně je zavoláme
-      try { if (typeof renderDOW === 'function') renderDOW(); } catch(e) {}
-      try { if (typeof renderCal === 'function') renderCal(); } catch(e) {}
+      try { if (typeof renderDOW === "function") renderDOW(); } catch(e) {}
+      try { if (typeof renderCal === "function") renderCal(); } catch(e) {}
 
       // podpora <dialog>
       if (modal.tagName && modal.tagName.toLowerCase() === "dialog") {
