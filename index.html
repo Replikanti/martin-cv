@@ -1499,5 +1499,112 @@ document.addEventListener("DOMContentLoaded", function () {
   // Když se modal otevře jinde (třeba openCalSafe), počítáme s tím, že renderDOW/renderCal už proběhne.
 })();
 </script>
+<script>
+(function(){
+  // Uchop elementy (existují už v tvém HTML)
+  var dateInput = document.getElementById('date');
+  var modeInput = document.getElementById('mode');
+  var slotsEl   = document.getElementById('slots');
+  var slotInput = document.getElementById('slot');
+  var slotHelp  = document.getElementById('slotHelp');
+
+  if (!dateInput || !modeInput || !slotsEl || !slotInput) return;
+
+  // Převezmi globální proměnné, nebo nastav fallback
+  var USER_TZ = (window.USER_TZ) || (Intl.DateTimeFormat().resolvedOptions().timeZone || 'Europe/Prague');
+  var SLOT_DURATION_MIN = (window.SLOT_DURATION_MIN) || 30;
+  var SLOTS_API = (window.SLOTS_API) || (typeof SLOTS_API !== 'undefined' ? SLOTS_API : null);
+
+  // Render helpery
+  function clearSlots(message){
+    slotsEl.innerHTML = '';
+    slotInput.value = '';
+    if (slotHelp) slotHelp.textContent = message || '';
+  }
+  function renderButtons(slots){
+    clearSlots('Nalezeno: ' + slots.length);
+    slots.forEach(function(s){
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'slot';
+      btn.setAttribute('role','option');
+      btn.setAttribute('aria-pressed','false');
+      btn.textContent = s.label || s.start || '—';
+      btn.addEventListener('click', function(){
+        [].forEach.call(slotsEl.querySelectorAll('.slot'), function(b){ b.setAttribute('aria-pressed', 'false'); });
+        btn.setAttribute('aria-pressed', 'true');
+        slotInput.value = s.start || s.value || '';
+      });
+      slotsEl.appendChild(btn);
+    });
+  }
+
+  // Hlavní funkce: GET → n8n → vykreslit
+  async function fetchAndRenderSlots(dateStr){
+    if (!SLOTS_API) {
+      clearSlots('');
+      var p = document.createElement('p');
+      p.className = 'muted';
+      p.innerHTML = 'Sloty nelze načíst: chybí <code>SLOTS_API</code>. Kontakt: <a href="mailto:mholy1983@gmail.com">mholy1983@gmail.com</a>, <a href="tel:+420792305456">+420 792 305 456</a>.';
+      slotsEl.appendChild(p);
+      return;
+    }
+    if (!dateStr) { clearSlots(''); return; }
+
+    slotsEl.innerHTML = '<p class="muted">Načítám volné časy…</p>';
+    if (slotHelp) slotHelp.textContent = 'Načítám…';
+
+    var params = new URLSearchParams({
+      date: dateStr,
+      duration: String(SLOT_DURATION_MIN),
+      tz: USER_TZ,
+      mode: (modeInput.value || 'remote')
+    });
+
+    try {
+      var res = await fetch(SLOTS_API + '?' + params.toString(), { method: 'GET' });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      var data = await res.json();
+      var slots = (data && data.slots) || [];
+
+      if (!slots.length) {
+        clearSlots('');
+        var empty = document.createElement('p');
+        empty.className = 'muted';
+        empty.textContent = 'Pro zvolené datum nejsou volné časy.';
+        slotsEl.appendChild(empty);
+        return;
+      }
+      renderButtons(slots);
+    } catch (e) {
+      console.error(e);
+      clearSlots('');
+      var err = document.createElement('p');
+      err.className = 'muted';
+      err.innerHTML = 'Nepodařilo se načíst sloty. Kontaktujte mě: <a href="mailto:mholy1983@gmail.com">mholy1983@gmail.com</a> nebo <a href="tel:+420792305456">+420 792 305 456</a>.';
+      slotsEl.appendChild(err);
+      var errorNotice = document.getElementById('formError');
+      if (errorNotice) {
+        errorNotice.classList.remove('hidden');
+        errorNotice.innerHTML = '<strong>Chyba!</strong> Načítání slotů selhalo. Pokud problém přetrvá, napište na <a href="mailto:mholy1983@gmail.com">mholy1983@gmail.com</a> nebo volejte <a href="tel:+420792305456">+420 792 305 456</a>.';
+      }
+    }
+  }
+
+  // Připojit listenery:
+  // 1) Když uživatel POTVRDÍ datum v modalu, náš kód už vyvolává: dateInput.dispatchEvent(new Event("change"))
+  //    → tenhle handler načte sloty
+  dateInput.addEventListener('change', function(){
+    fetchAndRenderSlots(dateInput.value);
+  });
+
+  // 2) Při změně Remote/Onsite – pokud už je vybrané datum, načti znovu
+  modeInput.addEventListener('change', function(){
+    if (dateInput.value) fetchAndRenderSlots(dateInput.value);
+  });
+
+  // Pozn.: ZÁMĚRNĚ nenačítáme sloty při loadu – až po výběru data (nebo změně režimu s vybraným datem).
+})();
+</script>
 </body>
 </html>
