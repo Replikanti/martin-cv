@@ -982,12 +982,12 @@
       revealEls.forEach(el => io.observe(el));
     }
 
+    // === Process form data endpoint (POST) ===
     const N8N_WEBHOOK_URL = 'https://n8n.replikanti.xyz/webhook/2dd3071a-0719-40e9-99ad-e246ce174fa1';
-    // === Slots endpoint (GET). DOPLŇ SVOU URL ===
-    const SLOTS_API = 'https://YOUR-N8N-ENDPOINT/webhook/available-slots';
+    // === Slots endpoint (GET) ===
+    const SLOTS_API = 'https://n8n.replikanti.xyz/webhook/8b1f7b37-e65d-4546-a84a-2c51e7e8cbf5';
     const USER_TZ = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Europe/Prague';
-    const SLOT_DURATION_MIN = 30;
-
+    const SLOT_DURATION_MIN = 60;
 
     const dateField = document.getElementById('date');
     const modal = document.getElementById('dateModal');
@@ -999,7 +999,7 @@
     const calToday = document.getElementById('calToday');
     const calCancel = document.getElementById('calCancel');
 
-    const DOW = ['Po','Út','St','Čt','Pá','So','Ne'];
+    const DOW = ['Po','Út','St','Čt','Pá'];
     function pad(n) { return n.toString().padStart(2,'0'); }
     function fmt(y,m,d) { return `${y}-${pad(m+1)}-${pad(d)}`; }
 
