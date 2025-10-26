@@ -651,6 +651,31 @@
   .btn-mail { color:#1d4ed8; border-color:#1d4ed8; }
   .btn-tel  { color:#16a34a; border-color:#16a34a; }
   .btn-ghost svg { width:18px; height:18px; display:block; }
+
+  .error-box {
+    border: 2px solid #ef4444;
+    background: rgba(239, 68, 68, 0.12);
+    color: #fca5a5;
+    border-radius: 14px;
+    padding: 16px;
+    box-shadow: 0 6px 14px rgba(239,68,68,.18);
+  }
+  .error-box h4 { margin: 0 0 6px 0; color: #fecaca; font-size: 1rem; }
+  .error-box .muted { color: #fca5a5; }
+  .error-actions { display:flex; gap:10px; flex-wrap:wrap; margin-top: 10px; }
+  .btn-ghost {
+    display:inline-flex; align-items:center; gap:8px;
+    padding: 10px 12px; border-radius: 12px; text-decoration: none;
+    border: 1px solid currentColor; font-weight: 600;
+    background: rgba(255,255,255,0.03);
+    transition: transform .05s ease, background .15s ease;
+  }
+  .btn-ghost:hover { transform: translateY(-1px); background: rgba(255,255,255,0.06); }
+  .btn-mail { color:#93c5fd; border-color:#93c5fd; }
+  .btn-tel  { color:#86efac; border-color:#86efac; }
+  .btn-ghost svg { width:18px; height:18px; display:block; }
+  .error-contacts { margin-top: 8px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+  .error-contacts a { color:#fff; text-decoration: underline dotted; }
 </style>
 </head>
 <body>
@@ -1520,7 +1545,6 @@ document.addEventListener("DOMContentLoaded", function () {
 })();
 </script>
 <script>
-  const SLOTS_API = 'https://n8n.replikanti.xyz/webhook/8b1f7b37-e65d-4546-a84a-2c51e7e8cbf5';
   const SLOT_DURATION_MIN = 60;
   const USER_TZ = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Europe/Prague';
 </script>
@@ -1602,7 +1626,8 @@ document.addEventListener("DOMContentLoaded", function () {
       const tz = window.USER_TZ || (Intl.DateTimeFormat().resolvedOptions().timeZone || 'Europe/Prague');
       const params = new URLSearchParams({ date: dateStr, duration: String(duration), tz, mode });
 
-      const res = await fetch(window.SLOTS_API + '?' + params.toString(), { method: 'GET' });
+      console.log('[slots] GET', window.SLOTS_API, params.toString());
+    const res = await fetch(window.SLOTS_API + '?' + params.toString(), { method: 'GET' });
       if (!res.ok) throw new Error('HTTP ' + res.status);
       const data = await res.json();
       const slots = (data && (data.slots || data.items || [])) || [];
@@ -1662,6 +1687,55 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     } catch(e){}
   })();
+})();
+</script>
+<script id="slots-config">
+  window.SLOTS_API = 'https://n8n.replikanti.xyz/webhook/8b1f7b37-e65d-4546-a84a-2c51e7e8cbf5';
+  window.SLOT_DURATION_MIN = 60;
+  window.USER_TZ = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Europe/Prague';
+</script>
+
+<script>
+(function(){
+  function ensureErrorBox(){
+    var box = document.getElementById('formError');
+    if (!box) {
+      var c = document.getElementById('contact') || document.body;
+      box = document.createElement('div');
+      box.id = 'formError';
+      box.className = 'notice notice--error';
+      c.appendChild(box);
+    }
+    return box;
+  }
+  function esc(s){ return (s||'').replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+
+  window.hideGlobalError = function(){
+    var box = document.getElementById('formError');
+    if (box) { box.classList.add('hidden'); box.innerHTML = ''; }
+  };
+
+  window.showGlobalError = function(reason){
+    var box = ensureErrorBox();
+    box.classList.remove('hidden');
+    box.innerHTML =
+      '<div class="error-box" role="alert" aria-live="assertive">' +
+      '  <h4>Oops, něco se nepovedlo.</h4>' +
+      (reason ? ('<div class="muted">'+ esc(reason) +'</div>') : '') +
+      '  <div class="error-contacts">Email: <a href="mailto:mholy1983@gmail.com">mholy1983@gmail.com</a> · Telefon: <a href="tel:+420792305456">+420&nbsp;792&nbsp;305&nbsp;456</a></div>' +
+      '  <div class="error-actions">' +
+      '    <a class="btn-ghost btn-mail" href="mailto:mholy1983@gmail.com">' +
+      '      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2Zm0 4-8 5L4 8V6l8 5 8-5Z"/></svg>' +
+      '      Napište mi' +
+      '    </a>' +
+      '    <a class="btn-ghost btn-tel" href="tel:+420792305456">' +
+      '      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.6 11.6 0 0 0 3.6.6 1 1 0 0 1 1 1v3.7a1 1 0 0 1-1 1A17.6 17.6 0 0 1 2.5 5a1 1 0 0 1 1-1H7a1 1 0 0 1 1 1 11.6 11.6 0 0 0 .6 3.6 1 1 0 0 1-.25 1Z"/></svg>' +
+      '      Zavolejte mi' +
+      '    </a>' +
+      '  </div>' +
+      '</div>';
+    try { box.scrollIntoView({behavior:'smooth', block:'center'}); } catch(e){}
+  };
 })();
 </script>
 </body>
