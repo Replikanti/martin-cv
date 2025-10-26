@@ -884,11 +884,6 @@
           <div>
             <label for="phone">Telefonní číslo</label>
             <input id="phone" name="phone" type="tel" autocomplete="tel" required>
-          
-          </div>
-          <div>
-            <label for="company">Název firmy</label>
-            <input id="company" name="company" type="text" autocomplete="organization" required>
           </div>
           <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 12px">
             <div>
@@ -927,7 +922,7 @@
           <strong>Děkuji!</strong> Zpráva byla odeslána. Potvrzení s detaily termínu dorazí emailem do 5 minut.
         </div>
         <div id="formError" class="notice notice--error hidden" role="alert" aria-live="assertive">
-          <strong>Chyba!</strong> Nepodařilo se odeslat zprávu. Zkuste to prosím znovu. Pokud problém přetrvá, napište na <a href="mailto:mholy1983@gmail.com">mholy1983@gmail.com</a> nebo volejte <a href="tel:+420792305456">+420 792 305 456</a>.
+          <strong>Chyba!</strong> Nepodařilo se odeslat zprávu. Zkuste to prosím znovu nebo mě kontaktujte přímo emailem.
         </div>
       </div>
     </section>
@@ -982,12 +977,7 @@
       revealEls.forEach(el => io.observe(el));
     }
 
-    // === Process form data endpoint (POST) ===
     const N8N_WEBHOOK_URL = 'https://n8n.replikanti.xyz/webhook/2dd3071a-0719-40e9-99ad-e246ce174fa1';
-    // === Slots endpoint (GET) ===
-    const SLOTS_API = 'https://n8n.replikanti.xyz/webhook/8b1f7b37-e65d-4546-a84a-2c51e7e8cbf5';
-    const USER_TZ = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Europe/Prague';
-    const SLOT_DURATION_MIN = 60;
 
     const dateField = document.getElementById('date');
     const modal = document.getElementById('dateModal');
@@ -999,7 +989,7 @@
     const calToday = document.getElementById('calToday');
     const calCancel = document.getElementById('calCancel');
 
-    const DOW = ['Po','Út','St','Čt','Pá'];
+    const DOW = ['Po','Út','St','Čt','Pá','So','Ne'];
     function pad(n) { return n.toString().padStart(2,'0'); }
     function fmt(y,m,d) { return `${y}-${pad(m+1)}-${pad(d)}`; }
 
@@ -1087,21 +1077,13 @@
       if (e.target === modal) closeCal();
     });
 
-    async function fetchSlots(dateStr, mode) {
+    function generateSlots(dateStr, mode) {
       if (!dateStr) return [];
-      if (!SLOTS_API || SLOTS_API.includes('YOUR-N8N-ENDPOINT')) {
-        throw new Error('SLOTS_API není správně nastaveno.');
-      }
-      const params = new URLSearchParams({
-        date: dateStr,
-        duration: String(SLOT_DURATION_MIN),
-        tz: USER_TZ,
-        mode: mode || 'remote'
-      });
-      const res = await fetch(`${SLOTS_API}?${params.toString()}`, { method: 'GET' });
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      const data = await res.json();
-      return (data && data.slots) || [];
+      const d = new Date(dateStr + 'T00:00:00');
+      const day = d.getDay();
+      const base = mode === 'onsite' ? ['10:00','11:00','14:00','15:00'] : ['10:00','11:00','13:00','16:00'];
+      if (day === 0 || day === 6) return [];
+      return base.map(t => ({ label: t, value: `${dateStr} ${t}` }));
     }
 
     const form = document.getElementById('contactForm');
@@ -1170,70 +1152,18 @@
       }
     });
 
-    async function renderSlots() {
+    function renderSlots() {
+      const slots = generateSlots(dateInput.value, modeInput.value);
       slotsEl.innerHTML = '';
       slotInput.value = '';
-      const p = document.createElement('p');
-      p.className = 'muted';
-      p.textContent = 'Načítám volné časy…';
-      slotsEl.appendChild(p);
-      try {
-        const slots = await fetchSlots(dateInput.value, modeInput.value);
-        slotsEl.innerHTML = '';
-        if (!slots.length) {
-          const empty = document.createElement('p');
-          empty.className = 'muted';
-          empty.textContent = 'Žádné volné sloty pro zvolené datum.';
-          slotsEl.appendChild(empty);
-          return;
-        }
-        for (const s of slots) {
-          const btn = document.createElement('button');
-          btn.type = 'button';
-          btn.className = 'slot';
-          btn.setAttribute('role','option');
-          btn.textContent = s.label || s.start || s.value;
-          btn.addEventListener('click', () => {
-            slotsEl.querySelectorAll('.slot').forEach(b => b.setAttribute('aria-pressed','false'));
-            btn.setAttribute('aria-pressed','true');
-            slotInput.value = s.start || s.value;
-          });
-          slotsEl.appendChild(btn);
-        }
-      } catch (e) {
-        console.error(e);
-        slotsEl.innerHTML = '';
-        const errP = document.createElement('p');
-        errP.className = 'muted';
-        errP.innerHTML = 'Nepodařilo se načíst volné časy. Kontaktujte mě prosím na ' +
-          '<a href="mailto:mholy1983@gmail.com">mholy1983@gmail.com</a> nebo na ' +
-          '<a href="tel:+420792305456">+420 792 305 456</a>.';
-        slotsEl.appendChild(errP);
-        const errorNotice = document.getElementById('formError');
-        if (errorNotice) {
-          errorNotice.classList.remove('hidden');
-          errorNotice.innerHTML = '<strong>Chyba!</strong> Nepodařilo se načíst sloty. Zkuste to prosím znovu. ' +
-            'Pokud problém přetrvá, napište na <a href="mailto:mholy1983@gmail.com">mholy1983@gmail.com</a> ' +
-            'nebo volejte <a href="tel:+420792305456">+420 792 305 456</a>.';
-        }
+      if (!slots.length) {
+        const p = document.createElement('p');
+        p.className = 'muted';
+        p.textContent = 'Žádné volné sloty pro zvolené datum.';
+        slotsEl.appendChild(p);
+        return;
       }
-    }
-      slots.forEach(s => {
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'slot';
-        btn.setAttribute('role','option');
-        btn.textContent = s.label;
-        btn.addEventListener('click', () => {
-          slotsEl.querySelectorAll('.slot').forEach(b => b.setAttribute('aria-pressed','false'));
-          btn.setAttribute('aria-pressed','true');
-          slotInput.value = s.value;
-        });
-        slotsEl.appendChild(btn);
-      });
-    }
-
-    dateInput.addEventListener('change', renderSlots);
+      dateInput.addEventListener('change', renderSlots);
     modeInput.addEventListener('change', () => {
       const isOnsite = modeInput.value === 'onsite';
       onsiteGroup.classList.toggle('hidden', !isOnsite);
@@ -1312,12 +1242,6 @@
         phoneField.focus();
         return;
       }
-      const companyField = document.getElementById('company');
-      if (!companyField.value.trim()) {
-        status.textContent = 'Vyplňte prosím název firmy.';
-        companyField.focus();
-        return;
-      }
 
       const locationField = document.getElementById('location');
       if (modeInput.value === 'onsite' && !locationField.value.trim()) {
@@ -1349,9 +1273,6 @@
         console.error(err);
         status.textContent = '';
         errorNotice.classList.remove('hidden');
-        errorNotice.innerHTML = '<strong>Chyba!</strong> Nepodařilo se odeslat zprávu. Zkuste to prosím znovu. ' +
-          'Pokud problém přetrvá, napište na <a href="mailto:mholy1983@gmail.com">mholy1983@gmail.com</a> ' +
-          'nebo volejte <a href="tel:+420792305456">+420 792 305 456</a>.';
         thanks.classList.add('hidden');
       }
     });
