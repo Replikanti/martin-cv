@@ -676,6 +676,12 @@
   .btn-ghost svg { width:18px; height:18px; display:block; }
   .error-contacts { margin-top: 8px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
   .error-contacts a { color:#fff; text-decoration: underline dotted; }
+
+  /* date-inline-hint */
+  .input-warn{outline:2px solid #eab308; box-shadow:0 0 0 4px rgba(234,179,8,.15); border-color:#eab308}
+  .field-hint{margin-top:.35rem; font-size:.9rem; line-height:1.25rem; color:#a16207; display:flex; align-items:center; gap:.5rem}
+  .field-hint.hidden{display:none}
+  .field-hint .dot{width:.5rem; height:.5rem; border-radius:9999px; background:#eab308; display:inline-block}
 </style>
 </head>
 <body>
@@ -1674,7 +1680,7 @@ document.addEventListener("DOMContentLoaded", function () {
 <script id="slots-config">
   window.SLOTS_API = 'https://n8n.replikanti.xyz/webhook/8b1f7b37-e65d-4546-a84a-2c51e7e8cbf5';
   window.SLOT_DURATION_MIN = 30;
-  window.USER_TZ = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Europe/Prague';
+  window.USER_TZ = (Intl.DateTimeFormat().resolvedOptions().timeZone || 'Europe/Prague');
 </script>
 
 <script>
@@ -1772,6 +1778,189 @@ function setDateISO(iso) {
       safeRender();
     }
   });
+})();
+</script>
+<script id="date-inline-hint-override">
+(function(){
+  function $(id){ return document.getElementById(id); }
+
+  function ensureHint(){
+    var dateInput = $("date");
+    if(!dateInput) return null;
+    var next = dateInput.nextElementSibling;
+    if (next && next.id === "dateHint") return next;
+    var div = document.createElement('div');
+    div.id = 'dateHint';
+    div.className = 'field-hint hidden';
+    div.setAttribute('role','status');
+    div.setAttribute('aria-live','polite');
+    div.innerHTML = '<span class="dot"></span><span></span>';
+    dateInput.parentNode.insertBefore(div, dateInput.nextSibling);
+    return div;
+  }
+
+  function updateDateHint(requested,resolved){
+    var dateInput = $('date'); var hint = ensureHint();
+    if(!dateInput || !hint) return;
+    var span = hint.querySelector('span:last-child');
+    if(requested && resolved && requested !== resolved){
+      var d = new Date(resolved + 'T00:00:00');
+      var pretty = isNaN(+d) ? resolved : d.toLocaleDateString('cs-CZ',{weekday:'short', day:'2-digit', month:'2-digit', year:'numeric'});
+      hint.classList.remove('hidden');
+      span.innerHTML = 'Vybraný den nelze rezervovat. Nejbližší volný: <strong>'+ pretty +'</strong>.';
+      dateInput.classList.add('input-warn');
+      dateInput.setAttribute('aria-describedby','dateHint');
+    } else {
+      hint.classList.add('hidden');
+      span.textContent = '';
+      dateInput.classList.remove('input-warn');
+      dateInput.removeAttribute('aria-describedby');
+    }
+  }
+
+  // obal fetchSlots: po fetchi promítni stav do hintu
+  var _fetchSlots = window.fetchSlots;
+  if (typeof _fetchSlots === 'function' && !_fetchSlots.__wrappedHint){
+    window.fetchSlots = async function(dateStr, mode){
+      var res = await _fetchSlots.apply(this, arguments);
+      try{
+        var req = (res && res.requestedDate) || dateStr || '';
+        var rsl = (res && res.resolvedDate)  || req;
+        updateDateHint(req, rsl);
+      }catch(e){ console.warn(e); }
+      return res;
+    };
+    window.fetchSlots.__wrappedHint = true;
+  }
+
+  // kdyby se fetch dělal uvnitř renderSlots, zkusíme to i tam
+  var _renderSlots = window.renderSlots;
+  if (typeof _renderSlots === 'function' && !_renderSlots.__wrappedHint){
+    window.renderSlots = async function(){
+      var before = ($('date')||{}).value || '';
+      var out = await _renderSlots.apply(this, arguments);
+      try{
+        var after = ($('date')||{}).value || '';
+        var req = window.__lastRequestedDate || before;
+        var rsl = window.__lastResolvedDate  || after;
+        updateDateHint(req, rsl);
+      }catch(e){ console.warn(e); }
+      return out;
+    };
+    window.renderSlots.__wrappedHint = true;
+  }
+
+  // uživatelská změna data → schovej hint (zase se ukáže po fetchi)
+  function wire(){
+    var el = $('date'); if(!el) return;
+    if(el.__wiredHint) return;
+    var clear = function(){ updateDateHint(null,null); };
+    el.addEventListener('input', clear);
+    el.addEventListener('change', clear);
+    el.__wiredHint = true;
+  }
+  if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded', wire);} else { wire(); }
+})();
+</script>
+<script id="slots-dynamic">
+(function(){
+  function $(id){ return document.getElementById(id); }
+
+  async function fetchSlots(dateStr, mode){
+    if(!dateStr) return { requestedDate:null, resolvedDate:null, slots:[] };
+    var SAPI = (typeof window.SLOTS_API!=='undefined' && window.SLOTS_API) || '';
+    if(!SAPI) throw new Error('SLOTS_API není nastaveno');
+    var dur = (typeof window.SLOT_DURATION_MIN==='number' ? window.SLOT_DURATION_MIN : 30);
+    var tz  = window.USER_TZ || (Intl.DateTimeFormat().resolvedOptions().timeZone || 'Europe/Prague');
+    var qs  = new URLSearchParams({ date:dateStr, duration:String(dur), tz:tz, mode:String(mode||'remote') });
+    var res = await fetch(SAPI + '?' + qs.toString(), { method:'GET' });
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    var data = await res.json();
+    var requestedDate = data.requestedDate || dateStr;
+    var resolvedDate  = data.resolvedDate  || requestedDate;
+    var slots = Array.isArray(data.slots) ? data.slots : [];
+    // pro případ, že jiný kód chce vědět posun dne
+    window.__lastRequestedDate = requestedDate;
+    window.__lastResolvedDate  = resolvedDate;
+    return { requestedDate, resolvedDate, slots };
+  }
+  window.fetchSlots = fetchSlots;
+
+  async function renderSlots(){
+    var dateInput = $('date'), modeInput = $('mode'), slotsEl=$('slots'), slotInput=$('slot'), slotHelp=$('slotHelp');
+    if(!dateInput || !slotsEl || !slotInput) return;
+
+    var dateStr = dateInput.value;
+    var mode    = (modeInput && modeInput.value) || 'remote';
+
+    // zahoď fallback obsah
+    slotsEl.innerHTML = '';
+    slotInput.value   = '';
+    if(!dateStr){ if(slotHelp) slotHelp.textContent=''; return; }
+
+    if(slotHelp) slotHelp.textContent = 'Načítám volné časy…';
+
+    try{
+      var { requestedDate, resolvedDate, slots } = await fetchSlots(dateStr, mode);
+
+      // pokud backend posunul den (víkend/obsazeno), promítni do UI
+      if(resolvedDate && resolvedDate !== dateInput.value){
+        dateInput.value = resolvedDate;
+        if (typeof window.view!=='undefined' && typeof window.renderCal==='function'){
+          try { var d=new Date(resolvedDate); if(!isNaN(+d)){ view.y=d.getFullYear(); view.m=d.getMonth(); renderCal(); } } catch(e){}
+        }
+        if(slotHelp) slotHelp.textContent = 'Nabízím nejbližší volný den: ' + resolvedDate + '.';
+      } else {
+        if(slotHelp) slotHelp.textContent = '';
+      }
+
+      if(!slots.length){
+        var p = document.createElement('p'); p.className='muted'; p.textContent='Pro tento den nejsou volné časy.'; slotsEl.appendChild(p);
+        return;
+      }
+
+      slots.forEach(function(s){
+        var btn = document.createElement('button');
+        btn.type='button';
+        btn.className='slot';
+        btn.setAttribute('role','option');
+        btn.setAttribute('aria-pressed','false');
+        btn.textContent = s.label || s.time || '—';
+        btn.addEventListener('click', function(){
+          slotsEl.querySelectorAll('.slot').forEach(function(x){ x.setAttribute('aria-pressed','false'); });
+          btn.setAttribute('aria-pressed','true');
+          slotInput.value = s.value || s.start || s.time || '';
+        });
+        slotsEl.appendChild(btn);
+      });
+    }catch(err){
+      console.error(err);
+      var p = document.createElement('p'); p.className='muted'; p.textContent='Sloty se nepodařilo načíst.'; slotsEl.appendChild(p);
+      if(typeof window.showGlobalError==='function'){ showGlobalError('Sloty nelze načíst – zkuste to prosím později.'); }
+      if(slotHelp) slotHelp.textContent = '';
+    }
+  }
+  window.renderSlots = renderSlots;
+
+  function wire(){
+    var dateInput=$('date'), modeInput=$('mode'), slotsEl=$('slots');
+    if(!dateInput || !slotsEl) return;
+    if(!dateInput.__wiredSlots){
+      dateInput.addEventListener('input',  renderSlots);
+      dateInput.addEventListener('change', renderSlots);
+      dateInput.__wiredSlots = true;
+    }
+    if(modeInput && !modeInput.__wiredSlots){
+      modeInput.addEventListener('change', renderSlots);
+      modeInput.__wiredSlots = true;
+    }
+    // vyčisti fallback a hned načti, pokud je datum předvyplněné
+    slotsEl.innerHTML = '';
+    if(dateInput.value){ renderSlots(); }
+  }
+
+  if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded', wire); }
+  else { wire(); }
 })();
 </script>
 </body>
