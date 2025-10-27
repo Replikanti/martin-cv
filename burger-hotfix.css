@@ -1,0 +1,17 @@
+/* burger hotfix v4: solid backgrounds + CTA on the right */
+.nav{display:flex;align-items:center;gap:12px}
+.actions{margin-left:auto}
+@media (max-width:760px){
+  .nav{position:relative;height:64px}
+  #mainNav{
+    position:absolute;top:64px;left:0;right:0;
+    background:#0f172a; /* SOLID background (no transparency) */
+    color:#e5e7eb;
+    border-bottom:1px solid #1f2937;
+    box-shadow:0 12px 28px rgba(0,0,0,.25);
+    display:none;z-index:1000;
+  }
+  #mainNav[data-open="true"]{display:block}
+  #mainNav a{color:#e5e7eb !important}
+  .menu-toggle{background:#0f172a;color:#e5e7eb;border:1px solid #1f2937}
+}
