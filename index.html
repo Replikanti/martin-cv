@@ -730,30 +730,118 @@
 #dateModal .cal-day[aria-selected="true"], #dateModal .day--selected{outline:2px solid #6366f1;outline-offset:2px;border-radius:.5rem}
 </style>
   <link rel="stylesheet" href="burger-hotfix.css">
+
+  <style id="mobile-menu-styles">
+  /* === Hamburger + mobilní menu === */
+  .burger-btn {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    border: 1px solid color-mix(in oklab, var(--text) 14%, transparent);
+    background: color-mix(in oklab, var(--panel) 92%, transparent);
+    color: var(--text);
+    font-size: 20px;
+    cursor: pointer;
+  }
+  .burger-btn:hover, .burger-btn:focus-visible { box-shadow: var(--ring); border-color: transparent; }
+
+  /* panel se adaptuje na světlý/tmavý režim přes CSS custom properties už v souboru */
+  .menu-drawer {
+    position: fixed;
+    top: 64px;           /* výška headeru */
+    left: 0;
+    right: 0;
+    z-index: 60;
+    padding: 10px 16px 16px;
+    background: color-mix(in oklab, var(--panel) 96%, transparent);
+    border-bottom: 1px solid color-mix(in oklab, var(--text) 14%, transparent);
+    box-shadow: 0 14px 30px rgba(0,0,0,.28);
+    backdrop-filter: saturate(140%) blur(8px);
+    animation: menudrop .18s cubic-bezier(.2,.7,.2,1);
+  }
+  @keyframes menudrop {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .menu-drawer nav ul {
+    list-style: none; margin: 0; padding: 0;
+    display: grid; gap: 8px;
+  }
+  .menu-drawer a {
+    display: block;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: color-mix(in oklab, var(--panel) 92%, transparent);
+    border: 1px solid color-mix(in oklab, var(--text) 10%, transparent);
+    color: var(--text);
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .menu-drawer a:hover, .menu-drawer a:focus-visible {
+    box-shadow: var(--ring); border-color: transparent; text-decoration: none;
+  }
+
+  /* Rozvržení na mobilech: zobraz hamburger, skryj desktop menu */
+  @media (max-width: 900px) {
+    .burger-btn { display: inline-flex; }
+    .nav-desktop { display: none; }
+    .nav { gap: 10px; }
+  }
+
+  /* Na desktopu je mobilní zásuvka vždy skrytá */
+  @media (min-width: 901px) {
+    .menu-drawer { display: none !important; }
+  }
+  </style>
+
 </head>
 <body>
   <header>
-    <div class="container">
-      <nav class="nav">
-        <a class="brand" href="#top" aria-label="Domů">
-          <span class="logo">MH</span>
-          <span>Martin Holý</span>
-        </a>
-        <nav aria-label="Hlavní navigace">
-          <ul>
-            <li><a href="#about">O mně</a></li>
-            <li><a href="#experience">Zkušenosti</a></li>
-            <li><a href="#projects">Projekty</a></li>
-            <li><a href="#skills">Dovednosti</a></li>
-            <li><a href="#contact">Kontakt</a></li>
-          </ul>
-        </nav>
-        <div class="actions">
-          <a class="btn primary" href="#contact">Domluvit schůzku</a>
-        </div>
+  <div class="container">
+    <nav class="nav">
+      <!-- hamburger vlevo -->
+      <button id="burger" class="burger-btn" aria-label="Otevřít menu" aria-expanded="false" aria-controls="mobileMenu">
+        ☰
+      </button>
+
+      <a class="brand" href="#top" aria-label="Domů">
+        <span class="logo">MH</span>
+        <span>Martin Holý</span>
+      </a>
+
+      <!-- původní desktopová navigace (zůstává pro ≥900px) -->
+      <nav aria-label="Hlavní navigace" class="nav-desktop">
+        <ul>
+          <li><a href="#about">O mně</a></li>
+          <li><a href="#experience">Zkušenosti</a></li>
+          <li><a href="#projects">Projekty</a></li>
+          <li><a href="#skills">Dovednosti</a></li>
+          <li><a href="#contact">Kontakt</a></li>
+        </ul>
       </nav>
-    </div>
-  </header>
+
+      <div class="actions">
+        <a class="btn primary" href="#contact">Domluvit schůzku</a>
+      </div>
+    </nav>
+  </div>
+
+  <!-- mobilní menu panel (schované) -->
+  <div id="mobileMenu" class="menu-drawer" hidden>
+    <nav aria-label="Mobilní menu">
+      <ul>
+        <li><a href="#about">O mně</a></li>
+        <li><a href="#experience">Zkušenosti</a></li>
+        <li><a href="#projects">Projekty</a></li>
+        <li><a href="#skills">Dovednosti</a></li>
+        <li><a href="#contact">Kontakt</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
 
   <main id="top">
     <section class="hero">
@@ -2148,6 +2236,43 @@ function setDateISO(iso) {
 })();
 </script>
   <script src="burger-hotfix.js"></script>
+
+<script>
+(function(){
+  const burger = document.getElementById('burger');
+  const drawer = document.getElementById('mobileMenu');
+
+  if (!burger || !drawer) return;
+
+  function openDrawer() {
+    drawer.hidden = false;
+    burger.setAttribute('aria-expanded', 'true');
+    setTimeout(() => document.addEventListener('click', onDocClick), 0);
+  }
+  function closeDrawer() {
+    drawer.hidden = true;
+    burger.setAttribute('aria-expanded', 'false');
+    document.removeEventListener('click', onDocClick);
+  }
+  function onDocClick(e) {
+    if (!drawer.contains(e.target) && e.target !== burger) closeDrawer();
+  }
+
+  burger.addEventListener('click', (e) => {
+    e.stopPropagation();
+    (drawer.hidden ? openDrawer : closeDrawer)();
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !drawer.hidden) closeDrawer();
+  });
+
+  drawer.querySelectorAll('a').forEach(a => {
+    a.addEventListener('click', () => closeDrawer());
+  });
+})();
+</script>
+
 </body>
 </html>
 <script>
