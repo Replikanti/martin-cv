@@ -2220,3 +2220,66 @@ function setDateISO(iso) {
   modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
 })();
 </script>
+<style id="cal-contrast-and-actions-patch">
+  /* --- Lepší kontrast navigačních šipek v datepickeru --- */
+  .cal-nav-btn {
+    color: #e5e7eb;                 /* světlejší ikona na dark backgroundu */
+    border: 1px solid rgba(255,255,255,.22);
+    background: rgba(255,255,255,.06);
+    box-shadow: 0 2px 8px rgba(0,0,0,.25);
+  }
+  .cal-nav-btn:hover,
+  .cal-nav-btn:focus-visible {
+    color: #ffffff;
+    border-color: rgba(255,255,255,.35);
+    background: rgba(255,255,255,.10);
+    outline: none;
+  }
+  .cal-nav-btn svg,
+  .cal-nav-btn svg * { fill: currentColor !important; stroke: currentColor !important; }
+
+  /* --- Akční lišta v modalu: Zrušit vlevo, ostatní vpravo --- */
+  #dateModal .cal-actions {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    padding: .75rem 1rem;
+  }
+  #dateModal .cal-actions-left  { margin-right: auto; display:flex; gap:.5rem; }
+  #dateModal .cal-actions-right { margin-left:  auto; display:flex; gap:.5rem; }
+</style>
+
+<script>
+/* Naváže zvýraznění na šipky v hlavičce kalendáře a jistí zarovnání akcí */
+(function(){
+  var modal = document.getElementById('dateModal');
+  if (!modal) return;
+
+  // Označ navigační šipky jednotnou třídou .cal-nav-btn (pro vyšší kontrast)
+  var head = modal.querySelector('.cal-head, .cal-header, .modal-head') || modal.querySelector('[class*="head"]');
+  if (head) {
+    var headBtns = head.querySelectorAll('button');
+    if (headBtns.length >= 2) {
+      headBtns[0].classList.add('cal-nav-btn');
+      headBtns[headBtns.length - 1].classList.add('cal-nav-btn');
+    }
+  }
+
+  // Jisti zarovnání akčních tlačítek (Zrušit vlevo; Dnes + Vybrat datum vpravo)
+  var actions = modal.querySelector('.cal-actions');
+  if (actions) {
+    var left = actions.querySelector('.cal-actions-left');
+    var right = actions.querySelector('.cal-actions-right');
+    if (!left)  { left  = document.createElement('div'); left.className  = 'cal-actions-left';  actions.prepend(left); }
+    if (!right) { right = document.createElement('div'); right.className = 'cal-actions-right'; actions.append(right); }
+
+    var btnCancel = actions.querySelector('#calCancel');
+    var btnToday  = actions.querySelector('#calToday');
+    var btnConfirm= actions.querySelector('#calConfirm');
+
+    if (btnCancel && btnCancel.parentElement !== left)  left.prepend(btnCancel);
+    if (btnToday  && btnToday.parentElement  !== right) right.append(btnToday);
+    if (btnConfirm&& btnConfirm.parentElement!== right) right.append(btnConfirm);
+  }
+})();
+</script>
