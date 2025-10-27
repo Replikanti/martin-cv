@@ -1034,7 +1034,6 @@
             <div>
               <label for="date">Preferované datum</label>
               <input id="date" name="date" type="text" inputmode="none" placeholder="rrrr-mm-dd" autocomplete="off" required readonly>
-            <div id="dateHint" class="field-hint hidden" role="status" aria-live="polite"></div>
             </div>
           </div>
           <div id="onsiteGroup" class="hidden" style="position: relative">
@@ -1579,7 +1578,6 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   // Potvrdit – nastaví <input id="date"> a načte sloty
-            <div id="dateHint" class="field-hint hidden" role="status" aria-live="polite"></div>
   if (btnConfirm) {
     btnConfirm.addEventListener('click', function(){
       if (!pickedISO) {
@@ -1723,7 +1721,7 @@ document.addEventListener("DOMContentLoaded", function () {
     slotsEl.appendChild(p);
     if (typeof showGlobalError === 'function') showGlobalError('Načítání slotů z n8n selhalo.');
   }
-}();
+})();
 </script>
 <script id="slots-config">
   window.SLOTS_API = 'https://n8n.replikanti.xyz/webhook/8b1f7b37-e65d-4546-a84a-2c51e7e8cbf5';
