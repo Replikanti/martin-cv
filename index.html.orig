@@ -1424,11 +1424,9 @@ modeInput.addEventListener("change", () => {
       return d.toISOString().slice(0,10);
     }
 
-    function initDate(){
-      // Nepřepisuj ručně vybrané datum
-      if (!dateInput.value) {
-        dateInput.value = nextBusinessISO();
-      }
+    function initDate() {
+      const iso = nextBusinessISO();
+      dateInput.value = iso;
       renderSlots();
       onsiteGroup.classList.toggle('hidden', modeInput.value !== 'onsite');
     }
@@ -1901,8 +1899,7 @@ function setDateISO(iso) {
 
     if (dateInput){
       dateInput.addEventListener('change',  safeRender);
-      dateInput.addEventListener('input', safeRender);
-      dateInput.addEventListener('change', safeRender);
+      dateInput.addEventListener('input',   safeRender);
     }
     if (modeInput){
       modeInput.addEventListener('change', safeRender);
