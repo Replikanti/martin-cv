@@ -1254,9 +1254,7 @@
         const iso = fmt(view.y, view.m, d);
         btn.dataset.iso = iso;
         btn.addEventListener('click', () => {
-          dateField.value = iso;
-          closeCal();
-          renderSlots();
+          dateField.value = iso; try { window.PICKED_ISO = iso; } catch(_) {} closeCal(); renderSlots();
         });
         calGrid.appendChild(btn);
       }
@@ -1669,15 +1667,18 @@ document.addEventListener("DOMContentLoaded", function () {
   // Potvrdit – nastaví <input id="date"> a načte sloty
   if (btnConfirm) {
     btnConfirm.addEventListener('click', function(){
-      if (!pickedISO) {
-        // pokud uživatel neklikl na den, ale chce potvrdit, zkus použít dnešek
-        pickedISO = pickedISO || new Date().toISOString().slice(0,10);
-      }
-      if (pickedISO) {
-        dateInput.value = pickedISO;
-        // vyvolej změnu → ať na to reaguje existující logika (renderSlots apod.)
-        try { dateInput.dispatchEvent(new Event('change')); } catch(e) {}
-      }
+        var iso = null;
+  try { if (typeof window!=='undefined' && window.PICKED_ISO) iso = window.PICKED_ISO; } catch(_) {}
+  if (!iso && typeof pickedISO !== 'undefined' && pickedISO) iso = pickedISO;
+  if (!iso) { try { iso = (document.getElementById('date')||{}).value || null; } catch(_) {} }
+  if (!iso) { try { iso = new Date().toISOString().slice(0,10); } catch(_) {} }
+  if (iso) {
+    try {
+      dateInput.value = iso;
+      dateInput.dispatchEvent(new Event('change'));
+    } catch(_) {}
+  }
+
       closeModal();
     });
   }
@@ -2314,6 +2315,12 @@ function setDateISO(iso) {
     grid.querySelectorAll('.cal-day[aria-selected="true"]').forEach(b => b.setAttribute('aria-selected','false'));
     btn.setAttribute('aria-selected','true');
     pickedISO = btn.dataset.iso || btn.getAttribute('data-iso');
+    // sync globálně i do inputu (neuzavíráme modal)
+    try { window.PICKED_ISO = pickedISO; } catch(_) {}
+    try {
+      var dateInp = document.getElementById('date');
+      if (dateInp) dateInp.value = pickedISO;
+    } catch(_) {}
   }
   grid.addEventListener('click', (e) => {
     const btn = e.target.closest('.cal-day');
