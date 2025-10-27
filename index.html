@@ -682,6 +682,12 @@
   .field-hint{margin-top:.35rem; font-size:.9rem; line-height:1.25rem; color:#a16207; display:flex; align-items:center; gap:.5rem}
   .field-hint.hidden{display:none}
   .field-hint .dot{width:.5rem; height:.5rem; border-radius:9999px; background:#eab308; display:inline-block}
+
+/* inline hint u pole datumu */
+.field-hint{margin-top:.5rem;font-size:.95rem;line-height:1.3;border:1px solid #3b82f6;border-radius:.75rem;padding:.6rem .75rem;background:color-mix(in oklab,#3b82f6 12%,transparent);box-shadow:0 6px 14px rgba(59,130,246,.15)}
+.field-hint.hidden{display:none}
+.field-hint strong{font-weight:600}
+.field-hint .mini{opacity:.8;font-size:.9em}
 </style>
 </head>
 <body>
@@ -988,6 +994,7 @@
             <div>
               <label for="date">Preferované datum</label>
               <input id="date" name="date" type="text" inputmode="none" placeholder="rrrr-mm-dd" autocomplete="off" required readonly>
+            <div id="dateHint" class="field-hint hidden" role="status" aria-live="polite"></div>
             </div>
           </div>
           <div id="onsiteGroup" class="hidden" style="position: relative">
@@ -1532,6 +1539,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   // Potvrdit – nastaví <input id="date"> a načte sloty
+            <div id="dateHint" class="field-hint hidden" role="status" aria-live="polite"></div>
   if (btnConfirm) {
     btnConfirm.addEventListener('click', function(){
       if (!pickedISO) {
@@ -1862,105 +1870,121 @@ function setDateISO(iso) {
   if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded', wire);} else { wire(); }
 })();
 </script>
+
 <script id="slots-dynamic">
 (function(){
   function $(id){ return document.getElementById(id); }
+  function debounce(fn,ms){ var t; return function(){ var a=arguments,th=this; clearTimeout(t); t=setTimeout(function(){ fn.apply(th,a); },ms||200); }; }
+
+  var _wired=false, _renderBusy=false, _suppressNext=false;
+
+  function showDateHint(resolvedDate, requestedDate){
+    var box=$('dateHint'); if(!box) return;
+    if(resolvedDate && requestedDate && resolvedDate!==requestedDate){
+      box.innerHTML = "<strong>Nabízím nejbližší volný termín:</strong> "+ resolvedDate +
+                      "<div class='mini'>Původně vybraný den byl "+ requestedDate +".</div>";
+      box.classList.remove('hidden');
+    }else{
+      hideDateHint();
+    }
+  }
+  function hideDateHint(){ var box=$('dateHint'); if(box){ box.classList.add('hidden'); box.innerHTML=""; } }
 
   async function fetchSlots(dateStr, mode){
     if(!dateStr) return { requestedDate:null, resolvedDate:null, slots:[] };
-    var SAPI = (typeof window.SLOTS_API!=='undefined' && window.SLOTS_API) || '';
-    if(!SAPI) throw new Error('SLOTS_API není nastaveno');
-    var dur = (typeof window.SLOT_DURATION_MIN==='number' ? window.SLOT_DURATION_MIN : 30);
-    var tz  = window.USER_TZ || (Intl.DateTimeFormat().resolvedOptions().timeZone || 'Europe/Prague');
-    var qs  = new URLSearchParams({ date:dateStr, duration:String(dur), tz:tz, mode:String(mode||'remote') });
-    var res = await fetch(SAPI + '?' + qs.toString(), { method:'GET' });
-    if(!res.ok) throw new Error('HTTP ' + res.status);
-    var data = await res.json();
-    var requestedDate = data.requestedDate || dateStr;
-    var resolvedDate  = data.resolvedDate  || requestedDate;
-    var slots = Array.isArray(data.slots) ? data.slots : [];
-    // pro případ, že jiný kód chce vědět posun dne
-    window.__lastRequestedDate = requestedDate;
-    window.__lastResolvedDate  = resolvedDate;
-    return { requestedDate, resolvedDate, slots };
+    var SAPI=(window.SLOTS_API||"");
+    if(!SAPI) throw new Error("SLOTS_API není nastaveno");
+    var dur=(typeof window.SLOT_DURATION_MIN==="number"?window.SLOT_DURATION_MIN:30);
+    var tz=window.USER_TZ||(Intl.DateTimeFormat().resolvedOptions().timeZone||"Europe/Prague");
+    var qs=new URLSearchParams({date:dateStr,duration:String(dur),tz:tz,mode:String(mode||"remote")});
+    var res=await fetch(SAPI+"?"+qs.toString(),{method:"GET"});
+    if(!res.ok) throw new Error("HTTP "+res.status);
+    var data=await res.json();
+    return {
+      requestedDate: data.requestedDate||dateStr,
+      resolvedDate:  data.resolvedDate ||data.requestedDate||dateStr,
+      slots: Array.isArray(data.slots)?data.slots:[]
+    };
   }
-  window.fetchSlots = fetchSlots;
 
   async function renderSlots(){
-    var dateInput = $('date'), modeInput = $('mode'), slotsEl=$('slots'), slotInput=$('slot'), slotHelp=$('slotHelp');
-    if(!dateInput || !slotsEl || !slotInput) return;
-
-    var dateStr = dateInput.value;
-    var mode    = (modeInput && modeInput.value) || 'remote';
-
-    // zahoď fallback obsah
-    slotsEl.innerHTML = '';
-    slotInput.value   = '';
-    if(!dateStr){ if(slotHelp) slotHelp.textContent=''; return; }
-
-    if(slotHelp) slotHelp.textContent = 'Načítám volné časy…';
-
+    if(_renderBusy) return; _renderBusy=true;
+    var dateInput=$("date"), modeInput=$("mode"), slotsEl=$("slots"), slotInput=$("slot"), slotHelp=$("slotHelp");
     try{
-      var { requestedDate, resolvedDate, slots } = await fetchSlots(dateStr, mode);
+      if(!dateInput||!slotsEl||!slotInput){ _renderBusy=false; return; }
+      var dateStr=dateInput.value, mode=(modeInput&&modeInput.value)||"remote";
+      slotsEl.innerHTML=""; slotInput.value="";
+      if(!dateStr){ if(slotHelp) slotHelp.textContent=""; _renderBusy=false; return; }
+      if(slotHelp) slotHelp.textContent="Načítám volné časy…";
 
-      // pokud backend posunul den (víkend/obsazeno), promítni do UI
-      if(resolvedDate && resolvedDate !== dateInput.value){
-        dateInput.value = resolvedDate;
-        if (typeof window.view!=='undefined' && typeof window.renderCal==='function'){
-          try { var d=new Date(resolvedDate); if(!isNaN(+d)){ view.y=d.getFullYear(); view.m=d.getMonth(); renderCal(); } } catch(e){}
-        }
-        if(slotHelp) slotHelp.textContent = 'Nabízím nejbližší volný den: ' + resolvedDate + '.';
-      } else {
-        if(slotHelp) slotHelp.textContent = '';
+      var data=await fetchSlots(dateStr,mode);
+      var requestedDate=data.requestedDate, resolvedDate=data.resolvedDate, slots=data.slots||[];
+
+      // Pokud backend posunul den, uprav input, ale nezpůsob další render (suppress)
+      if(resolvedDate!==dateInput.value){
+        _suppressNext=true;
+        dateInput.value=resolvedDate;
+        try{
+          if(typeof window.view!=="undefined" && typeof window.renderCal==="function"){
+            var d=new Date(resolvedDate);
+            if(!isNaN(+d)){ view.y=d.getFullYear(); view.m=d.getMonth(); renderCal(); }
+          }
+        }catch(_){}
+        showDateHint(resolvedDate, requestedDate);
+      }else{
+        hideDateHint();
       }
 
+      if(slotHelp) slotHelp.textContent="";
       if(!slots.length){
-        var p = document.createElement('p'); p.className='muted'; p.textContent='Pro tento den nejsou volné časy.'; slotsEl.appendChild(p);
-        return;
+        var p=document.createElement("p"); p.className="muted"; p.textContent="Pro tento den nejsou volné časy."; slotsEl.appendChild(p);
+        _renderBusy=false; return;
       }
 
       slots.forEach(function(s){
-        var btn = document.createElement('button');
-        btn.type='button';
-        btn.className='slot';
-        btn.setAttribute('role','option');
-        btn.setAttribute('aria-pressed','false');
-        btn.textContent = s.label || s.time || '—';
-        btn.addEventListener('click', function(){
-          slotsEl.querySelectorAll('.slot').forEach(function(x){ x.setAttribute('aria-pressed','false'); });
-          btn.setAttribute('aria-pressed','true');
-          slotInput.value = s.value || s.start || s.time || '';
+        var btn=document.createElement("button");
+        btn.type="button"; btn.className="slot"; btn.setAttribute("role","option"); btn.setAttribute("aria-pressed","false");
+        btn.textContent=s.label||s.time||"—";
+        btn.addEventListener("click",function(){
+          slotsEl.querySelectorAll(".slot").forEach(function(x){ x.setAttribute("aria-pressed","false"); });
+          btn.setAttribute("aria-pressed","true");
+          slotInput.value=s.value||s.start||s.time||"";
         });
         slotsEl.appendChild(btn);
       });
     }catch(err){
       console.error(err);
-      var p = document.createElement('p'); p.className='muted'; p.textContent='Sloty se nepodařilo načíst.'; slotsEl.appendChild(p);
-      if(typeof window.showGlobalError==='function'){ showGlobalError('Sloty nelze načíst – zkuste to prosím později.'); }
-      if(slotHelp) slotHelp.textContent = '';
+      var slotsEl=$("slots"); if(slotsEl){ slotsEl.innerHTML=""; var p=document.createElement("p"); p.className="muted"; p.textContent="Sloty se nepodařilo načíst."; slotsEl.appendChild(p); }
+      if(typeof window.showGlobalError==="function") showGlobalError("Sloty nelze načíst – zkuste to prosím později.");
+      var slotHelp=$("slotHelp"); if(slotHelp) slotHelp.textContent="";
+    }finally{
+      _renderBusy=false;
     }
   }
-  window.renderSlots = renderSlots;
+  window.renderSlots=renderSlots;
 
-  function wire(){
-    var dateInput=$('date'), modeInput=$('mode'), slotsEl=$('slots');
-    if(!dateInput || !slotsEl) return;
-    if(!dateInput.__wiredSlots){
-      dateInput.addEventListener('input',  renderSlots);
-      dateInput.addEventListener('change', renderSlots);
-      dateInput.__wiredSlots = true;
-    }
-    if(modeInput && !modeInput.__wiredSlots){
-      modeInput.addEventListener('change', renderSlots);
-      modeInput.__wiredSlots = true;
-    }
-    // vyčisti fallback a hned načti, pokud je datum předvyplněné
-    slotsEl.innerHTML = '';
+  function wireOnce(){
+    if(_wired) return; _wired=true;
+    var dateInput=$("date"), modeInput=$("mode"), slotsEl=$("slots");
+    if(!dateInput||!slotsEl) return;
+
+    var onDateChanged = function(){
+      if(_suppressNext){ _suppressNext=false; return; } // přepis z resolvedDate nevyvolá další fetch
+      debouncedRender();
+    };
+    var debouncedRender = debounce(renderSlots, 200);
+
+    // přesně jednou
+    if(!dateInput.__wired){ dateInput.addEventListener("change", onDateChanged); dateInput.__wired=true; }
+    if(modeInput && !modeInput.__wired){ modeInput.addEventListener("change", debouncedRender); modeInput.__wired=true; }
+
+    // začneme čistě
+    slotsEl.innerHTML="";
     if(dateInput.value){ renderSlots(); }
   }
 
-  if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded', wire); }
-  else { wire(); }
+  if(document.readyState==="loading"){ document.addEventListener("DOMContentLoaded", wireOnce); }
+  else { wireOnce(); }
 })();
 </script>
 </body>
