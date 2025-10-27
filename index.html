@@ -688,6 +688,46 @@
 .field-hint.hidden{display:none}
 .field-hint strong{font-weight:600}
 .field-hint .mini{opacity:.8;font-size:.9em}
+
+/* === Calendar accessibility & contrast === */
+.cal-nav{display:flex;gap:.5rem;align-items:center}
+.cal-nav button{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:10px;border:1px solid #475569;background:#111827}
+.cal-nav button:hover{filter:brightness(1.2)}
+.cal-nav svg{width:18px;height:18px;stroke:#e5e7eb}
+.cal-actions{display:flex;gap:.5rem;justify-content:flex-start;padding-top:.5rem}
+.btn-cal{display:inline-flex;align-items:center;gap:.4rem;padding:.55rem .8rem;border-radius:.7rem;border:1px solid #4b5563;background:#0f172a;color:#e5e7eb;font-weight:600}
+.btn-cal.primary{border-color:#6366f1;background:linear-gradient(135deg,#4f46e5,#06b6d4)}
+.btn-cal:disabled{opacity:.5;pointer-events:none}
+.cal-day[aria-selected=true]{outline:2px solid #6366f1;outline-offset:2px;border-radius:.5rem}
+
+/* === Calendar spacing & actions === */
+.cal-actions{display:flex;gap:.8rem;flex-wrap:wrap;justify-content:flex-end;padding:.9rem 1rem .7rem}
+.btn-cal{display:inline-flex;align-items:center;gap:.5rem;padding:.65rem 1rem;border-radius:.8rem;border:1px solid #4b5563;background:#0f172a;color:#e5e7eb;font-weight:600}
+.btn-cal.primary{border-color:#6366f1;background:linear-gradient(135deg,#4f46e5,#06b6d4)}
+.cal-nav{display:flex;gap:.6rem;align-items:center}
+.cal-nav button{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:12px;border:1px solid #475569;background:#111827}
+.cal-nav svg{width:18px;height:18px;stroke:#e5e7eb}
+.cal-day[aria-selected="true"]{outline:2px solid #6366f1;outline-offset:2px;border-radius:.5rem}
+
+/* === Calendar UX patch === */
+.cal-footer{display:flex;justify-content:space-between;align-items:center;gap:.75rem;padding:.9rem 1rem .8rem;border-top:1px solid #1f2937}
+.cal-actions-left,.cal-actions-right{display:flex;gap:.6rem;flex-wrap:wrap}
+.btn-cal{display:inline-flex;align-items:center;gap:.5rem;padding:.6rem 1rem;border-radius:.8rem;border:1px solid #4b5563;background:#0f172a;color:#e5e7eb;font-weight:600}
+.btn-cal.primary{border-color:#6366f1;background:linear-gradient(135deg,#4f46e5,#06b6d4)}
+.cal-nav{display:flex;gap:.6rem;align-items:center}
+.cal-nav button{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:12px;border:1px solid #475569;background:#111827}
+.cal-nav svg{width:18px;height:18px;stroke:#e5e7eb}
+.cal-day[aria-selected="true"]{outline:2px solid #6366f1;outline-offset:2px;border-radius:.5rem}
+
+/* === Calendar UX patch (inside modal) === */
+#dateModal .cal-footer{display:flex;justify-content:space-between;align-items:center;gap:.75rem;padding:.9rem 1rem;border-top:1px solid #1f2937}
+#dateModal .cal-actions-left,#dateModal .cal-actions-right{display:flex;gap:.6rem;flex-wrap:wrap}
+#dateModal .btn-cal{display:inline-flex;align-items:center;gap:.5rem;padding:.6rem 1rem;border-radius:.8rem;border:1px solid #4b5563;background:#0f172a;color:#e5e7eb;font-weight:600}
+#dateModal .btn-cal.primary{border-color:#6366f1;background:linear-gradient(135deg,#4f46e5,#06b6d4)}
+#dateModal .cal-nav{display:flex;gap:.6rem;align-items:center;justify-content:space-between;margin:0 0 .25rem 0}
+#dateModal .cal-nav button{display:inline-flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:12px;border:1px solid #475569;background:#111827}
+#dateModal .cal-nav svg{width:18px;height:18px;stroke:#e5e7eb}
+#dateModal .cal-day[aria-selected="true"], #dateModal .day--selected{outline:2px solid #6366f1;outline-offset:2px;border-radius:.5rem}
 </style>
 </head>
 <body>
@@ -1987,5 +2027,196 @@ function setDateISO(iso) {
   else { wireOnce(); }
 })();
 </script>
+
+
+
+<script id="cal-patch-v2">
+(function(){
+  if (window.__calPatchV2) return; window.__calPatchV2 = true;
+
+  var modal = document.getElementById('dateModal') || document.querySelector('dialog, [role="dialog"], .modal');
+  var dateInput = document.getElementById('date');
+
+  // Uklid dřívějších footerů, které nejsou uvnitř modalu
+  document.querySelectorAll('.cal-footer').forEach(function(el){
+    if (!modal || !modal.contains(el)) el.remove();
+  });
+
+  if (!modal) return;
+
+  function closeModal(){
+    // podpora <dialog> i div-based modalů
+    if (modal.tagName && modal.tagName.toLowerCase()==='dialog'){
+      try { modal.close(); } catch(e){}
+      modal.removeAttribute('open');
+    }
+    modal.classList.add('hidden');
+    modal.style.display='none';
+    modal.style.opacity='0';
+    modal.style.pointerEvents='none';
+  }
+
+  function openModal(){
+    modal.classList.remove('hidden');
+    modal.style.display='grid';
+    modal.style.opacity='1';
+    modal.style.pointerEvents='auto';
+    if (modal.tagName && modal.tagName.toLowerCase()==='dialog'){
+      try { modal.showModal && modal.showModal(); } catch(e){}
+    }
+  }
+
+  // Získání vybraného dne z gridu
+  function getPickedIso(){
+    // 1) vlastní značení
+    var el = modal.querySelector('.cal-day[aria-selected="true"][data-date]');
+    if (el && el.dataset.date) return el.dataset.date;
+    // 2) různé knihovny:
+    var el2 = modal.querySelector('[data-date].day--selected, [data-date][aria-selected="true"]');
+    if (el2 && el2.dataset.date) return el2.dataset.date;
+    // 3) fallback – vezmi obsah tlačítka a slož datum ze zobrazeného měsíce
+    var focused = modal.querySelector('.cal-day[aria-selected="true"], .day--selected, .cal-day:focus');
+    var day = focused ? focused.textContent.trim() : '';
+    var currentHeader = modal.querySelector('[data-cal-header], .cal-header, h2, h3');
+    // pokud to nepůjde spolehlivě, vrať aktuální hodnotu inputu
+    return (dateInput && dateInput.value) || '';
+  }
+
+  function todayIso(){
+    var d=new Date(), m=('0'+(d.getMonth()+1)).slice(-2), da=('0'+d.getDate()).slice(-2);
+    return d.getFullYear()+'-'+m+'-'+da;
+  }
+
+  function setDateAndClose(iso){
+    if (dateInput && iso){
+      dateInput.value = iso;
+      if (typeof window.renderSlots==='function') { try{ window.renderSlots(); }catch(e){} }
+    }
+    closeModal();
+  }
+
+  // Vytvoř footer uvnitř modalu (pokud chybí)
+  function ensureFooter(){
+    var footer = modal.querySelector('.cal-footer');
+    if (footer) return;
+
+    footer = document.createElement('div');
+    footer.className = 'cal-footer';
+
+    var left = document.createElement('div'); left.className = 'cal-actions-left';
+    var right= document.createElement('div'); right.className = 'cal-actions-right';
+
+    var bCancel = document.createElement('button');
+    bCancel.type='button'; bCancel.className='btn-cal'; bCancel.textContent='Zrušit';
+    bCancel.addEventListener('click', function(e){ e.preventDefault(); closeModal(); });
+
+    var bToday  = document.createElement('button');
+    bToday.type='button'; bToday.className='btn-cal'; bToday.textContent='Dnes';
+    bToday.addEventListener('click', function(e){ e.preventDefault(); setDateAndClose(todayIso()); });
+
+    var bOk     = document.createElement('button');
+    bOk.type='button'; bOk.className='btn-cal primary'; bOk.textContent='Vybrat datum';
+    bOk.addEventListener('click', function(e){ e.preventDefault(); setDateAndClose(getPickedIso()); });
+
+    left.appendChild(bCancel);
+    right.appendChild(bToday);
+    right.appendChild(bOk);
+    footer.appendChild(left);
+    footer.appendChild(right);
+
+    // přilep na konec obsahu modalu
+    modal.appendChild(footer);
+  }
+
+  ensureFooter();
+
+  // ESC => zavřít
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'Escape' && !modal.classList.contains('hidden')) closeModal();
+    if (e.key === 'Enter' && !modal.classList.contains('hidden')){
+      e.preventDefault(); setDateAndClose(getPickedIso());
+    }
+  });
+
+  // Klik mimo obsah (overlay) => zavřít (jen když overlay je přímo modal)
+  modal.addEventListener('click', function(e){
+    if (e.target === modal) closeModal();
+  });
+
+  // Export helperů pro stávající kód (kdyby bylo potřeba)
+  window.__calClose = closeModal;
+  window.__calOpen  = openModal;
+})();
+</script>
 </body>
 </html>
+<script>
+(function(){
+  const modal   = document.getElementById('dateModal');
+  const grid    = document.getElementById('calGrid');
+  const actions = modal?.querySelector('.cal-actions');
+  const dateInp = document.getElementById('date');
+  if (!modal || !grid || !actions || !dateInp) return;
+
+  // 1) Ukliď zbloudilé akce mimo modal (dřívější injekce)
+  document.querySelectorAll('body > .cal-actions, body > .cal-footer, body > .cal-actions-left, body > .cal-actions-right')
+    .forEach(n => n.remove());
+
+  // 2) Přestav akční řádek v modalu: vlevo Zrušit, vpravo Dnes + Vybrat datum
+  let left  = document.createElement('div');  left.className  = 'cal-actions-left';
+  let right = document.createElement('div'); right.className = 'cal-actions-right';
+
+  const btnCancel = document.getElementById('calCancel');
+  const btnToday  = document.getElementById('calToday');
+
+  let btnConfirm = document.getElementById('calConfirm');
+  if (!btnConfirm) {
+    btnConfirm = document.createElement('button');
+    btnConfirm.id = 'calConfirm';
+    btnConfirm.type = 'button';
+    btnConfirm.className = 'btn primary';
+    btnConfirm.textContent = 'Vybrat datum';
+  }
+
+  actions.innerHTML = '';
+  if (btnCancel) left.appendChild(btnCancel);
+  if (btnToday)  right.appendChild(btnToday);
+  right.appendChild(btnConfirm);
+  actions.append(left, right);
+
+  // 3) Výběr dne = jen označit (neuzavírat)
+  let pickedISO = null;
+  function markSelected(btn){
+    grid.querySelectorAll('.cal-day[aria-selected="true"]').forEach(b => b.setAttribute('aria-selected','false'));
+    btn.setAttribute('aria-selected','true');
+    pickedISO = btn.dataset.iso || btn.getAttribute('data-iso');
+  }
+  grid.addEventListener('click', (e) => {
+    const btn = e.target.closest('.cal-day');
+    if (!btn) return;
+    // zruš původní onClick, který modal zavíral
+    e.preventDefault(); 
+    e.stopImmediatePropagation();
+    markSelected(btn);
+  }, true); // capture = true, ať chytíme dřív než starý handler
+
+  // 4) Zavírání
+  function closeModal(){
+    modal.removeAttribute('open');
+    modal.classList.remove('modalopen');
+    modal.style.display = '';
+    modal.style.visibility = '';
+    modal.style.opacity = '';
+    modal.style.pointerEvents = '';
+  }
+  btnCancel?.addEventListener('click', closeModal);
+  btnConfirm.addEventListener('click', () => {
+    if (pickedISO) {
+      dateInp.value = pickedISO;
+      if (typeof renderSlots === 'function') { try { renderSlots(); } catch(_){} }
+    }
+    closeModal();
+  });
+  modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+})();
+</script>
