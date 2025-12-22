@@ -317,34 +317,44 @@
       margin-top: 10px;
     }
 
-    .skills {
+    .skills-grid {
       display: grid;
-      grid-template-columns: repeat(12, 1fr);
-      gap: 12px;
+      grid-template-columns: 1fr;
+      gap: 24px;
     }
-    .skill {
-      grid-column: span 6;
+    @media (min-width: 700px) {
+      .skills-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+    .skill-category h3 {
+      font-size: 1.1rem;
+      margin: 0 0 12px;
+      color: var(--brand);
+      border-bottom: 1px solid color-mix(in oklab, var(--text) 10%, transparent);
+      padding-bottom: 8px;
+    }
+    .skill-list {
+      display: grid;
+      gap: 8px;
+    }
+    .skill-item {
       background: var(--panel);
-      border-radius: 999px;
       padding: 8px 12px;
+      border-radius: 8px;
       border: 1px solid color-mix(in oklab, var(--text) 10%, transparent);
       display: flex;
-      align-items: center;
       justify-content: space-between;
+      align-items: center;
+      font-size: 0.95rem;
     }
-    .bar {
-      height: 8px;
-      border-radius: 999px;
-      background: color-mix(in oklab, var(--text) 10%, transparent);
-      overflow: hidden;
-      flex: 1;
-      margin-left: 12px;
-    }
-    .bar i {
-      display: block;
-      height: 100%;
-      width: var(--value, 60%);
-      background: linear-gradient(90deg, var(--brand), var(--brand-2));
+    .skill-level {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--muted);
+      background: color-mix(in oklab, var(--text) 5%, transparent);
+      padding: 2px 8px;
+      border-radius: 6px;
     }
 
     form {
@@ -904,14 +914,14 @@
       <div class="container hero-inner">
         <div>
           <div class="kicker"><span class="gradtext">DevOps · MLOps · AI Engineering · Kubernetes · Automation</span></div>
-          <h1>I build and scale infrastructure automation, CI/CD pipelines, and developer tooling — from Kubernetes clusters to static analysis engines.</h1>
+          <h1>I build and scale infrastructure automation, CI/CD pipelines, and AI-driven workflows — from complex integrations to static analysis engines.</h1>
           <div class="h1-underline" aria-hidden="true"></div>
-          <p class="lead accent">7+ years in DevOps/automation engineering, creating deployment platforms, Kubernetes infrastructure, and open-source developer tools. Currently building FlowLint, a static analysis suite for n8n workflows.</p>
+          <p class="lead accent">7+ years in DevOps/automation engineering, specializing in workflow orchestration, LLM integration, and open-source tooling. Currently building FlowLint, a static analysis suite for n8n workflows.</p>
           <ul class="muted" style="margin:0 0 14px 18px">
-            <li>Kubernetes & Istio – deployed and standardized container orchestration and service mesh</li>
-            <li>CI/CD – GitHub Actions, Jenkins, unified deployment pipelines with audit trails</li>
-            <li>Open-Source – creator & maintainer of FlowLint (TypeScript, AST-based linting, 14+ rules)</li>
-            <li>Infrastructure as Code – AWS CDK, Ansible, Docker Compose with AI-assisted development</li>
+            <li>Automation & Orchestration – n8n expert, GitHub Actions, custom workflow logic</li>
+            <li>AI & LLM Engineering – integrating LLMs into developer workflows and tooling</li>
+            <li>Open-Source – creator & maintainer of FlowLint (TypeScript, AST-based linting)</li>
+            <li>Infrastructure as Code – Terraform, AWS CDK, Docker, robust CI/CD pipelines</li>
           </ul>
           <div class="hero-cta">
             <a class="btn primary" href="#projects">My Work</a>
@@ -984,14 +994,6 @@
           <div class="card">
             <h3>Technical Breadth</h3>
             <p>Started in technical support (AVG), progressed through infrastructure engineering (IBM), application support (Home Credit), to DevOps leadership and automation engineering (Alma Career). Deep understanding of the full stack from customer support to production operations.</p>
-          </div>
-          <div class="card">
-            <h3>Languages</h3>
-            <ul>
-              <li>Czech - Native</li>
-              <li>English - B2 (Professional working proficiency)</li>
-              <li>German - A2 (Elementary)</li>
-            </ul>
           </div>
         </div>
       </div>
@@ -1154,23 +1156,54 @@
     <section id="skills">
       <div class="container">
         <h2 class="section-title">Skills</h2>
-        <p class="section-sub">DevOps, MLOps, and AI engineering competencies – approximate proficiency levels.</p>
-        <div class="skills">
-          <div class="skill"><span>Kubernetes & Istio</span><div class="bar"><i style="--value: 80%"></i></div></div>
-          <div class="skill"><span>Docker & Docker Swarm</span><div class="bar"><i style="--value: 82%"></i></div></div>
-          <div class="skill"><span>CI/CD – GitHub Actions</span><div class="bar"><i style="--value: 88%"></i></div></div>
-          <div class="skill"><span>TypeScript & Node.js</span><div class="bar"><i style="--value: 86%"></i></div></div>
-          <div class="skill"><span>React & Vite</span><div class="bar"><i style="--value: 78%"></i></div></div>
-          <div class="skill"><span>Infrastructure as Code – AWS CDK</span><div class="bar"><i style="--value: 70%"></i></div></div>
-          <div class="skill"><span>Ansible – roles & playbooks</span><div class="bar"><i style="--value: 82%"></i></div></div>
-          <div class="skill"><span>n8n – workflow orchestration</span><div class="bar"><i style="--value: 90%"></i></div></div>
-          <div class="skill"><span>Jenkins & Cucumber (integration tests)</span><div class="bar"><i style="--value: 72%"></i></div></div>
-          <div class="skill"><span>Observability – Prometheus · CloudWatch</span><div class="bar"><i style="--value: 80%"></i></div></div>
-          <div class="skill"><span>Redis & BullMQ (job queues)</span><div class="bar"><i style="--value: 84%"></i></div></div>
-          <div class="skill"><span>Express & REST APIs</span><div class="bar"><i style="--value: 82%"></i></div></div>
-          <div class="skill"><span>Testing – Vitest · unit & integration</span><div class="bar"><i style="--value: 80%"></i></div></div>
-          <div class="skill"><span>Documentation – Backstage · Notion</span><div class="bar"><i style="--value: 82%"></i></div></div>
-          <div class="skill"><span>AI/LLM integration (Claude Sonnet)</span><div class="bar"><i style="--value: 76%"></i></div></div>
+        <p class="section-sub">Technical competencies and proficiency levels optimized for role matching.</p>
+        
+        <div class="skills-grid">
+          
+          <div class="skill-category">
+            <h3>Automation & CI/CD</h3>
+            <div class="skill-list">
+              <div class="skill-item"><span>n8n Workflow Orchestration</span> <span class="skill-level">Expert</span></div>
+              <div class="skill-item"><span>GitHub Actions</span> <span class="skill-level">Expert</span></div>
+              <div class="skill-item"><span>Release-Please</span> <span class="skill-level">Advanced</span></div>
+              <div class="skill-item"><span>Renovate Bot</span> <span class="skill-level">Advanced</span></div>
+              <div class="skill-item"><span>CI/CD Pipelines Design</span> <span class="skill-level">Advanced</span></div>
+              <div class="skill-item"><span>Jenkins</span> <span class="skill-level">Intermediate</span></div>
+            </div>
+          </div>
+
+          <div class="skill-category">
+            <h3>Development & AI</h3>
+            <div class="skill-list">
+              <div class="skill-item"><span>TypeScript & Node.js</span> <span class="skill-level">Advanced</span></div>
+              <div class="skill-item"><span>LLM Integration & Prompt Eng.</span> <span class="skill-level">Advanced</span></div>
+              <div class="skill-item"><span>Static Analysis (AST)</span> <span class="skill-level">Intermediate</span></div>
+              <div class="skill-item"><span>React & Vite</span> <span class="skill-level">Intermediate</span></div>
+              <div class="skill-item"><span>GitHub App Development</span> <span class="skill-level">Intermediate</span></div>
+            </div>
+          </div>
+
+          <div class="skill-category">
+            <h3>Infrastructure & Ops</h3>
+            <div class="skill-list">
+              <div class="skill-item"><span>Docker & Containers</span> <span class="skill-level">Advanced</span></div>
+              <div class="skill-item"><span>Terraform</span> <span class="skill-level">Intermediate</span></div>
+              <div class="skill-item"><span>AWS CDK</span> <span class="skill-level">Intermediate</span></div>
+              <div class="skill-item"><span>Redis & BullMQ</span> <span class="skill-level">Intermediate</span></div>
+              <div class="skill-item"><span>Kubernetes</span> <span class="skill-level">Intermediate</span></div>
+              <div class="skill-item"><span>Observability (Prometheus)</span> <span class="skill-level">Intermediate</span></div>
+            </div>
+          </div>
+
+          <div class="skill-category">
+            <h3>Languages</h3>
+            <div class="skill-list">
+              <div class="skill-item"><span>Czech</span> <span class="skill-level">Native</span></div>
+              <div class="skill-item"><span>English</span> <span class="skill-level">CEFR B2 / Professional</span></div>
+              <div class="skill-item"><span>German</span> <span class="skill-level">CEFR A2 / Elementary</span></div>
+            </div>
+          </div>
+
         </div>
       </div>
     </section>
