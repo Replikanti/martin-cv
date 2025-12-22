@@ -15,25 +15,25 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #0b0d10;
-      --panel: #12161b;
+      --bg: #000000;
+      --panel: #0a0a0a;
       --text: #e5e7eb;
-      --muted: #a8b3c1;
-      --brand: #7c3aed;
-      --brand-2: #06b6d4;
-      --ring: 0 0 0 3px rgba(124, 58, 237, .35);
+      --muted: #a3a3a3;
+      --brand: #dc2626; /* Red */
+      --brand-2: #16a34a; /* Green */
+      --ring: 0 0 0 3px rgba(220, 38, 38, .35);
       --radius: 16px;
-      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --shadow: 0 10px 30px rgba(0,0,0,.5);
     }
     @media (prefers-color-scheme: light) {
       :root {
-        --bg: #f7f7f9;
-        --panel: #ffffff;
+        --bg: #ffffff;
+        --panel: #f5f5f5;
         --text: #0f172a;
         --muted: #475569;
-        --brand: #7c3aed;
-        --brand-2: #0891b2;
-        --shadow: 0 8px 20px rgba(2,6,23,.08);
+        --brand: #dc2626;
+        --brand-2: #16a34a;
+        --shadow: 0 8px 20px rgba(0,0,0,.08);
       }
     }
 
@@ -41,7 +41,7 @@
     html { scroll-behavior: smooth; }
     body {
       margin: 0;
-      background: radial-gradient(1200px 800px at 80% -10%, rgba(124,58,237,.12), transparent 55%), radial-gradient(900px 600px at 10% 110%, rgba(6,182,212,.12), transparent 55%), var(--bg);
+      background: radial-gradient(1200px 800px at 80% -10%, rgba(220,38,38,.08), transparent 55%), radial-gradient(900px 600px at 10% 110%, rgba(22,163,74,.08), transparent 55%), var(--bg);
       color: var(--text);
       font: 16px/1.6 system-ui, -apple-system, 'Segoe UI', 'Inter', Roboto, Helvetica, Arial, 'Apple Color Emoji', 'Segoe UI Emoji';
     }
@@ -801,7 +801,7 @@
     btnConfirm.id = 'calConfirm';
     btnConfirm.type = 'button';
     btnConfirm.className = 'btn primary';
-    btnConfirm.textContent = 'Vybrat datum';
+    btnConfirm.textContent = 'Select Date';
   }
 
   actions.innerHTML = '';
@@ -1780,128 +1780,7 @@ btnConfirm.textContent = 'Confirm';
   const SLOT_DURATION_MIN = 60;
   const USER_TZ = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Europe/Prague';
 </script>
-<script>
-(function(){
-  function ensureErrorBox(){
-    var box = document.getElementById('formError');
-    if (!box) {
-      var c = document.getElementById('contact') || document.body;
-      box = document.createElement('div');
-      box.id = 'formError';
-      box.className = 'notice notice--error';
-      c.appendChild(box);
-    }
-    return box;
-  }
-  function esc(s){ return (s||'').replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
 
-  window.hideGlobalError = function(){
-    var box = document.getElementById('formError');
-    if (box) { box.classList.add('hidden'); box.innerHTML = ''; }
-  };
-
-  window.showGlobalError = function(reason){
-    var box = ensureErrorBox();
-    box.classList.remove('hidden');
-    box.innerHTML =
-      '<div class="error-box" role="alert" aria-live="assertive">' +
-      '  <strong>Oops, something went wrong.</strong>' +
-      (reason ? ('<div class="muted" style="margin:.25rem 0 .5rem 0;">'+ esc(reason) +'</div>') : '') +
-      '  <div class="error-actions">' +
-      '    <a class="btn-ghost btn-mail" href="mailto:mholy1983@gmail.com">' +
-      '      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2Zm0 4-8 5L4 8V6l8 5 8-5Z"/></svg>' +
-      '      Write me a letter' +
-      '    </a>' +
-      '    <a class="btn-ghost btn-tel" href="tel:+420792305456">' +
-      '      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.6 11.6 0 0 0 3.6.6 1 1 0 0 1 1 1v3.7a1 1 0 0 1-1 1A17.6 17.6 0 0 1 2.5 5a1 1 0 0 1 1-1H7a1 1 0 0 1 1 1 11.6 11.6 0 0 0 .6 3.6 1 1 0 0 1-.25 1Z"/></svg>' +
-      '      Call me' +
-      '    </a>' +
-      '  </div>' +
-      '</div>';
-    try { box.scrollIntoView({behavior:'smooth', block:'center'}); } catch(e){}
-  };
-})();
-</script>
-<script>
-(function(){
-  // Přímé uchopení prvků (používáme existující ID)
-  var dateInput = document.getElementById('date');
-  var modeInput = document.getElementById('mode');
-  var slotsEl   = document.getElementById('slots');
-  var slotInput = document.getElementById('slot');
-  var slotHelp  = document.getElementById('slotHelp');
-
-  if (!dateInput || !modeInput || !slotsEl || !slotInput) return;
-
-  // Přepíšeme existující renderSlots() moderní verzí s GET → n8n
-  window.renderSlots = async function renderSlots() {
-  const slotHelp = document.getElementById('slotHelp');
-  if (slotHelp) slotHelp.textContent = 'Loading available times…';
-  slotsEl.innerHTML = '';
-  slotInput.value = '';
-
-  try {
-    const { requestedDate, resolvedDate, slots } =
-      await fetchSlots(dateInput.value, modeInput.value);
-
-    // posun na nejbližší volný den + info pro uživatele
-    if (resolvedDate && resolvedDate !== dateInput.value) {
-      dateInput.value = resolvedDate;
-      if (typeof view !== 'undefined') {
-        try {
-          const d0 = new Date(resolvedDate);
-          view.y = d0.getFullYear();
-          view.m = d0.getMonth();
-          if (typeof renderCal === 'function') renderCal();
-        } catch(e){}
-      }
-      if (slotHelp) {
-        const d = new Date(resolvedDate);
-        slotHelp.textContent =
-          `The selected day is not available. Offering the next available slots for ${d.toLocaleDateString('en-US')}.`;
-      }
-    } else {
-      if (slotHelp) slotHelp.textContent = '';
-    }
-
-    if (!slots.length) {
-      const p = document.createElement('p');
-      p.className = 'muted';
-      p.textContent = 'No available slots for the selected date.';
-      slotsEl.appendChild(p);
-      return;
-    }
-
-    slots.forEach(s => {
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'slot';
-      btn.setAttribute('role','option');
-      btn.setAttribute('aria-pressed','false');
-
-      const label = s.label || s.start || s.time || '—';
-      const value = s.value || s.start || s.time || '';
-
-      btn.textContent = label;
-      btn.addEventListener('click', () => {
-        [...slotsEl.querySelectorAll('.slot')].forEach(b => b.setAttribute('aria-pressed','false'));
-        btn.setAttribute('aria-pressed','true');
-        slotInput.value = value;
-      });
-
-      slotsEl.appendChild(btn);
-    });
-  } catch (err) {
-    console.error(err);
-    if (slotHelp) slotHelp.textContent = '';
-    const p = document.createElement('p');
-    p.className = 'muted';
-    p.textContent = 'Could not load slots.';
-    slotsEl.appendChild(p);
-    if (typeof showGlobalError === 'function') showGlobalError('Loading slots from n8n failed.');
-  }
-})();
-</script>
 <script id="slots-config">
   window.SLOTS_API = 'https://n8n.replikanti.xyz/webhook/8b1f7b37-e65d-4546-a84a-2c51e7e8cbf5';
   window.SLOT_DURATION_MIN = 30;
@@ -1933,17 +1812,17 @@ btnConfirm.textContent = 'Confirm';
     box.classList.remove('hidden');
     box.innerHTML =
       '<div class="error-box" role="alert" aria-live="assertive">' +
-      '  <h4>Oops, něco se nepovedlo.</h4>' +
+      '  <h4>Oops, something went wrong.</h4>' +
       (reason ? ('<div class="muted">'+ esc(reason) +'</div>') : '') +
-      '  <div class="error-contacts">Email: <a href="mailto:mholy1983@gmail.com">mholy1983@gmail.com</a> · Telefon: <a href="tel:+420792305456">+420&nbsp;792&nbsp;305&nbsp;456</a></div>' +
+      '  <div class="error-contacts">Email: <a href="mailto:mholy1983@gmail.com">mholy1983@gmail.com</a> · Phone: <a href="tel:+420792305456">+420&nbsp;792&nbsp;305&nbsp;456</a></div>' +
       '  <div class="error-actions">' +
       '    <a class="btn-ghost btn-mail" href="mailto:mholy1983@gmail.com">' +
       '      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2Zm0 4-8 5L4 8V6l8 5 8-5Z"/></svg>' +
-      '      Napište mi' +
+      '      Write me' +
       '    </a>' +
       '    <a class="btn-ghost btn-tel" href="tel:+420792305456">' +
       '      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.6 11.6 0 0 0 3.6.6 1 1 0 0 1 1 1v3.7a1 1 0 0 1-1 1A17.6 17.6 0 0 1 2.5 5a1 1 0 0 1 1-1H7a1 1 0 0 1 1 1 11.6 11.6 0 0 0 .6 3.6 1 1 0 0 1-.25 1Z"/></svg>' +
-      '      Zavolejte mi' +
+      '      Call me' +
       '    </a>' +
       '  </div>' +
       '</div>';
@@ -2096,8 +1975,8 @@ function setDateISO(iso) {
   function showDateHint(resolvedDate, requestedDate){
     var box=$('dateHint'); if(!box) return;
     if(resolvedDate && requestedDate && resolvedDate!==requestedDate){
-      box.innerHTML = "<strong>Nabízím nejbližší volný termín:</strong> "+ resolvedDate +
-                      "<div class='mini'>Původně vybraný den byl "+ requestedDate +".</div>";
+      box.innerHTML = "<strong>Offering the nearest available date:</strong> "+ resolvedDate +
+                      "<div class='mini'>Originally selected day was "+ requestedDate +".</div>";
       box.classList.remove('hidden');
     }else{
       hideDateHint();
@@ -2130,7 +2009,7 @@ function setDateISO(iso) {
       var dateStr=dateInput.value, mode=(modeInput&&modeInput.value)||"remote";
       slotsEl.innerHTML=""; slotInput.value="";
       if(!dateStr){ if(slotHelp) slotHelp.textContent=""; _renderBusy=false; return; }
-      if(slotHelp) slotHelp.textContent="Načítám volné časy…";
+      if(slotHelp) slotHelp.textContent="Loading available slots…";
 
       var data=await fetchSlots(dateStr,mode);
       var requestedDate=data.requestedDate, resolvedDate=data.resolvedDate, slots=data.slots||[];
@@ -2152,7 +2031,7 @@ function setDateISO(iso) {
 
       if(slotHelp) slotHelp.textContent="";
       if(!slots.length){
-        var p=document.createElement("p"); p.className="muted"; p.textContent="Pro tento den nejsou volné časy."; slotsEl.appendChild(p);
+        var p=document.createElement("p"); p.className="muted"; p.textContent="No available slots for this day."; slotsEl.appendChild(p);
         _renderBusy=false; return;
       }
 
@@ -2169,8 +2048,8 @@ function setDateISO(iso) {
       });
     }catch(err){
       console.error(err);
-      var slotsEl=$("slots"); if(slotsEl){ slotsEl.innerHTML=""; var p=document.createElement("p"); p.className="muted"; p.textContent="Sloty se nepodařilo načíst."; slotsEl.appendChild(p); }
-      if(typeof window.showGlobalError==="function") showGlobalError("Sloty nelze načíst – zkuste to prosím později.");
+      var slotsEl=$("slots"); if(slotsEl){ slotsEl.innerHTML=""; var p=document.createElement("p"); p.className="muted"; p.textContent="Failed to load slots."; slotsEl.appendChild(p); }
+      if(typeof window.showGlobalError==="function") showGlobalError("Cannot load slots – please try again later.");
       var slotHelp=$("slotHelp"); if(slotHelp) slotHelp.textContent="";
     }finally{
       _renderBusy=false;
