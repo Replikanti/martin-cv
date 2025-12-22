@@ -75,24 +75,77 @@
         max-width: 960px;
       }
     }
+    /* Mobile Header & Sidebar */
+    .mobile-header {
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      padding: 15px 20px;
+      border-bottom: 1px solid var(--border);
+      background: var(--sidebar-bg);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
     
     @media (max-width: 899px) {
+      .mobile-header { display: flex; }
+      
       .sidebar {
-        padding: 20px;
-        border-bottom: 1px solid var(--border);
-        background: var(--sidebar-bg);
+        position: fixed;
+        inset: 0;
+        z-index: 40;
+        transform: translateX(-100%);
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        width: 80%;
+        max-width: 300px;
+        box-shadow: 2px 0 10px rgba(0,0,0,0.1);
       }
-      .main-content {
-        padding: 30px 20px;
+      .sidebar.open {
+        transform: translateX(0);
       }
-      .brand { margin-bottom: 10px; }
+      
+      /* Mobile Menu Overlay */
+      .menu-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.5);
+        z-index: 30;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s;
+      }
+      .menu-overlay.open {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
       nav ul {
-        display: flex;
-        gap: 15px;
-        flex-wrap: wrap;
-        font-size: 0.9rem;
+        display: block; /* Stack links vertically in drawer */
+        font-size: 1rem;
       }
+      nav li { margin-bottom: 1.2rem; }
+      
+      /* Hide Avatar in sidebar on mobile since it's redundant/large? 
+         Actually, keeping it in the drawer is fine for personal branding. 
+         But we need to ensure layout is good. */
     }
+
+    /* Burger Button */
+    .burger-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--text);
+      font-size: 1.5rem;
+    }
+
 
     /* Typography */
     h1, h2, h3, h4 {
@@ -367,7 +420,16 @@
 </head>
 <body>
 
-  <aside class="sidebar">
+  <header class="mobile-header">
+    <div style="font-weight:700; font-size:1.1rem;">Martin Holý</div>
+    <button class="burger-btn" aria-label="Toggle menu" onclick="toggleMenu()">
+      ☰
+    </button>
+  </header>
+
+  <div class="menu-overlay" onclick="toggleMenu()"></div>
+
+  <aside class="sidebar" id="sidebar">
     <div class="brand">
       <div class="avatar">
         <img src="./LinkedIn_400.jpg" alt="Martin Holý" width="120" height="120" loading="eager">
@@ -378,11 +440,11 @@
     
     <nav>
       <ul>
-        <li><a href="#about">About</a></li>
-        <li><a href="#experience">Experience</a></li>
-        <li><a href="#projects">Projects</a></li>
-        <li><a href="#skills">Skills</a></li>
-        <li><a href="#contact">Contact</a></li>
+        <li><a href="#about" onclick="toggleMenu()">About</a></li>
+        <li><a href="#experience" onclick="toggleMenu()">Experience</a></li>
+        <li><a href="#projects" onclick="toggleMenu()">Projects</a></li>
+        <li><a href="#skills" onclick="toggleMenu()">Skills</a></li>
+        <li><a href="#contact" onclick="toggleMenu()">Contact</a></li>
       </ul>
     </nav>
     
@@ -391,6 +453,13 @@
       <a href="Profile.pdf" class="btn outline" style="display:block; text-align:center; font-size:0.9rem" download>Download CV</a>
     </div>
   </aside>
+
+  <script>
+    function toggleMenu() {
+      document.getElementById('sidebar').classList.toggle('open');
+      document.querySelector('.menu-overlay').classList.toggle('open');
+    }
+  </script>
 
   <main class="main-content">
     
