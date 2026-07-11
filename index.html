@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Martin Holý – AI-Native Architect | Autonomous Agents & AI Integration</title>
-  <meta name="description" content="AI-Native Architect specializing in autonomous agents, multi-agent orchestration, and AI integration. Building production-ready AI systems at scale." />
+  <meta name="description" content="AI-Native Architect building autonomous agent federations: the open-core Agentis platform (Rust), AI engineering factories for the software delivery lifecycle, and Web3 security research on audit contests." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="icon" href="/favicon.ico" sizes="any">
@@ -411,67 +411,6 @@
     .skill-name { font-weight: 500; }
     .skill-val { color: var(--muted); font-size: 0.85rem; }
 
-    /* Contact Form */
-    form {
-      display: grid;
-      gap: 1.5rem;
-      max-width: 600px;
-    }
-    label {
-      display: block;
-      margin-bottom: 0.5rem;
-      font-weight: 500;
-      font-size: 0.9rem;
-    }
-    input, textarea, select {
-      width: 100%;
-      padding: 12px;
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      background: var(--bg);
-      color: var(--text);
-      font-family: inherit;
-      font-size: 1rem;
-    }
-    input:focus, textarea:focus, select:focus {
-      outline: 2px solid var(--accent);
-      border-color: transparent;
-    }
-    
-    /* Calendar Modal */
-    .modal {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.5);
-      display: none;
-      place-items: center;
-      z-index: 1000;
-    }
-    .modal[open] { display: grid; }
-    .dialog {
-      background: var(--bg);
-      padding: 20px;
-      border-radius: 8px;
-      width: 90%;
-      max-width: 350px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-    }
-    .cal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-    .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; text-align: center; }
-    .cal-day { padding: 8px; cursor: pointer; border-radius: 4px; }
-    .cal-day:hover { background: var(--border); }
-    .cal-day[aria-selected="true"] { background: var(--accent); color: white; }
-    .cal-actions { margin-top: 15px; display: flex; justify-content: flex-end; gap: 10px; }
-
-    .slots { display: flex; flex-wrap: wrap; gap: 10px; }
-    .slot { padding: 8px 12px; border: 1px solid var(--border); border-radius: 4px; cursor: pointer; background: var(--bg); }
-    .slot[aria-pressed="true"] { background: var(--accent); color: white; border-color: var(--accent); }
-    
-    .hidden { display: none; }
-    .notice { padding: 10px; border-radius: 4px; font-size: 0.9rem; }
-    .notice--success { background: #d4edda; color: #155724; }
-    .notice--error { background: #f8d7da; color: #721c24; }
-
   </style>
 </head>
 <body>
@@ -532,13 +471,13 @@
   <main class="main-content">
     
     <section id="hero">
-      <p style="color: var(--accent); font-weight:600; text-transform:uppercase; letter-spacing:1px; font-size:0.9rem;">AI Architecture · Autonomous Agents · Software Engineering</p>
+      <p style="color: var(--accent); font-weight:600; text-transform:uppercase; letter-spacing:1px; font-size:0.9rem;">Autonomous Agents · Agent Federations · AI-Native Engineering</p>
       <h1>Building the next generation of AI-native systems.</h1>
       <p style="font-size: 1.25rem; color: var(--muted); max-width: 700px;">
-        I bridge the gap between complex system architecture and the frontier of Generative AI. My focus is on moving beyond simple chat interfaces to build production-ready autonomous agents and deeply integrated LLM applications that deliver real business value.
+        I build autonomous agent systems that do real engineering work: an open-core agent platform written in Rust, federations of agents that take issues to merged pull requests, an AI engineering factory for a legal-tech company, and security research agents competing in Web3 audit contests.
       </p>
       <div style="margin-top: 2rem;">
-        <a href="#contact" class="btn">Book a meeting</a>
+        <a href="#contact" class="btn">Get in touch</a>
         <a href="#projects" class="btn outline" style="margin-left: 10px">View Work</a>
       </div>
     </section>
@@ -546,15 +485,15 @@
     <section id="about">
       <h2>About</h2>
       <p>
-        I bridge the gap between complex system architecture and the frontier of Generative AI. My focus is on moving beyond simple chat interfaces to build <strong>production-ready autonomous agents and deeply integrated LLM applications</strong> that deliver real business value.
+        I design and build systems where <strong>AI agents do real engineering work</strong> — not demos. My current work spans an open-core agent platform, autonomous agent federations that plan, implement, review and merge production code, and AI-driven security research on Web3 audit platforms.
       </p>
       <p>
-        <strong>AI-Native Architecture:</strong> Designing systems where AI isn't an add-on, but the core engine.<br>
-        <strong>Autonomous Agents:</strong> Developing goal-oriented agents capable of complex reasoning and tool usage.<br>
-        <strong>Scalable Engineering:</strong> Applying rigorous software engineering principles to the often chaotic world of AI/ML.
+        <strong>Agent Platforms:</strong> Building <a href="https://github.com/Replikanti/agentis" target="_blank" rel="noopener">Agentis</a> — an open-core platform for autonomous agents: a Rust runtime, an agent DSL, and public colonies under Apache 2.0.<br>
+        <strong>AI-Driven SDLC:</strong> Multi-agent "factories" that automate the software delivery lifecycle end to end, from issue intake to reviewed, merged pull requests.<br>
+        <strong>Security Research:</strong> Autonomous bug-hunting agents active in audit contests on Immunefi and Sherlock.
       </p>
       <p>
-        Currently obsessed with multi-agent orchestration and making LLMs reliable at scale.
+        Before going all-in on agents I spent 15+ years in deployment automation, DevOps and platform engineering — that operational discipline is what keeps my agent systems production-grade.
       </p>
       <div style="margin-top: 1.5rem; display: flex; gap: 10px; flex-wrap: wrap;">
         <span class="tag">Prague Metropolitan Area</span>
@@ -573,10 +512,10 @@
         </div>
         <div class="timeline-desc">
           <ul>
-            <li>Architecting and building <strong>AI-driven frameworks</strong> to automate complex engineering workflows.</li>
-            <li>Developing <strong>autonomous agents</strong> to enhance internal development capabilities and software delivery.</li>
-            <li>Implementing advanced AI models to optimize code generation and technical scalability.</li>
-            <li>Ensuring high standards of software excellence and security within the company's AI ecosystem.</li>
+            <li>Building an <strong>AI engineering "factory"</strong> — a GitLab-integrated multi-agent system that writes, reviews and ships production code.</li>
+            <li>Designing agent workflows around merge requests, CI feedback and code review, with guardrails and QA gates before anything lands.</li>
+            <li>Integrating LLM-driven code generation and review into an established codebase and delivery process.</li>
+            <li>Ensuring high standards of software quality and security within the company's AI ecosystem.</li>
           </ul>
         </div>
       </div>
@@ -587,11 +526,22 @@
           <div class="timeline-meta">11/2025 – Present</div>
         </div>
         <div class="timeline-desc">
-          <h3 style="font-size:1rem; margin-top:1rem;">Agentis · Founder & Lead Architect <span style="color:var(--muted); font-weight:400; font-size:0.9rem;">03/2026 – Present</span></h3>
+          <h3 style="font-size:1rem; margin-top:1rem;"><a href="https://github.com/Replikanti/agentis" target="_blank" rel="noopener">Agentis</a> · Founder & Lead Architect <span style="color:var(--muted); font-weight:400; font-size:0.9rem;">03/2026 – Present</span></h3>
           <ul>
-            <li>Developing a <strong>high-performance DSL in Rust</strong> for AI agentic workflows — memory-safe, ultra-low latency orchestration for autonomous agents.</li>
-            <li>Eliminating Python-based framework overhead with specialized syntax for state management, tool-calling, and reasoning loops.</li>
-            <li>Phase 1 complete: core parsing logic and execution runtime for deterministic agent behavior.</li>
+            <li>Building an <strong>open-core platform for autonomous agents</strong>: a Rust runtime (~200k LOC), an agent DSL, and an evolution engine with capability-based security and cognitive budgets.</li>
+            <li>Publishing ready-to-run federations in <a href="https://github.com/Replikanti/agentis-colonies" target="_blank" rel="noopener">agentis-colonies</a> (Apache 2.0) — colonies of daemon agents that learn from observation and gradually take over routine work.</li>
+            <li>A development federation autonomously takes GitHub issues to <strong>merged pull requests</strong> — planning, implementing, reviewing and merging behind QA gates.</li>
+            <li>Built <a href="https://github.com/Replikanti/sdlc-bench" target="_blank" rel="noopener">sdlc-bench</a> to measure the cheapest (model, effort) tier per engineering task class and calibrate agent routing with data instead of intuition.</li>
+          </ul>
+          <h3 style="font-size:1rem; margin-top:1rem;"><a href="https://github.com/Replikanti/flat-cyborg" target="_blank" rel="noopener">flat-cyborg</a> · Author <span style="color:var(--muted); font-weight:400; font-size:0.9rem;">05/2026 – Present</span></h3>
+          <ul>
+            <li>A <strong>PTY wrapper for driving LLM CLIs</strong> (Claude Code and others) from scripts and daemons — terminal screen-state extraction and structured output parsing, written in Rust with minimal dependencies.</li>
+            <li>The code-generation backbone of the agent federations: every autonomous edit runs through it.</li>
+          </ul>
+          <h3 style="font-size:1rem; margin-top:1rem;">Web3 Security Research · <a href="https://github.com/Replikanti/agentis-colonies/tree/main/dark-factory" target="_blank" rel="noopener">dark-factory</a> <span style="color:var(--muted); font-weight:400; font-size:0.9rem;">06/2026 – Present</span></h3>
+          <ul>
+            <li>Building an <strong>autonomous audit federation</strong> on top of Agentis: stateful invariant fuzzing, symbolic execution (Halmos), and fork-state verification against live deployments.</li>
+            <li>Competing in audit contests and bounty programs on <strong><a href="https://audits.sherlock.xyz/watson/f1A7_cYb0rG" target="_blank" rel="noopener">Sherlock</a> and Immunefi</strong>; the pipeline has reproduced past High-severity contest findings end to end.</li>
           </ul>
           <h3 style="font-size:1rem; margin-top:1rem;">Ralph Platform · Lead Engineer <span style="color:var(--muted); font-weight:400; font-size:0.9rem;">01/2026 – Present</span></h3>
           <ul>
@@ -701,31 +651,66 @@
       <h2>Projects</h2>
       <div class="project-grid">
         <div class="project-card">
-          <div class="project-title">Agentis</div>
+          <div class="project-title"><a href="https://github.com/Replikanti/agentis" target="_blank" rel="noopener">Agentis</a></div>
           <div class="project-desc">
-            High-performance DSL in Rust for AI agentic workflows. Memory-safe, ultra-low latency orchestration for autonomous agents with specialized syntax for state management, tool-calling, and reasoning loops.
+            Open-core platform for autonomous agents: Rust runtime, agent DSL, and evolution engine with capability-based security and cognitive budgets. Private core, public storefront and colonies.
           </div>
           <div>
             <span class="tag">Rust</span>
-            <span class="tag">DSL</span>
             <span class="tag">AI Agents</span>
+            <span class="tag">Open-Core</span>
           </div>
         </div>
 
         <div class="project-card">
-          <div class="project-title">Ralph Platform</div>
+          <div class="project-title"><a href="https://github.com/Replikanti/agentis-colonies" target="_blank" rel="noopener">Agentis Colonies</a></div>
           <div class="project-desc">
-            Digital labor automation and multi-agent orchestration platform. Autonomous Git workflows with production-grade guardrails and cost management.
+            Ready-to-run agent federations under Apache 2.0: an autonomous development colony that takes issues to merged PRs, non-custodial protocol monitoring, and security research colonies.
           </div>
           <div>
-            <span class="tag">TypeScript</span>
-            <span class="tag">GCP/GKE</span>
             <span class="tag">Multi-Agent</span>
+            <span class="tag">Apache 2.0</span>
+            <span class="tag">Automation</span>
           </div>
         </div>
 
         <div class="project-card">
-          <div class="project-title">FlowLint</div>
+          <div class="project-title"><a href="https://github.com/Replikanti/flat-cyborg" target="_blank" rel="noopener">flat-cyborg</a></div>
+          <div class="project-desc">
+            PTY wrapper for driving LLM CLIs programmatically — terminal screen-state extraction and structured output for scripted and daemonized use of Claude Code and other terminal AI tools.
+          </div>
+          <div>
+            <span class="tag">Rust</span>
+            <span class="tag">PTY</span>
+            <span class="tag">LLM Tooling</span>
+          </div>
+        </div>
+
+        <div class="project-card">
+          <div class="project-title"><a href="https://github.com/Replikanti/agentis-colonies/tree/main/dark-factory" target="_blank" rel="noopener">dark-factory</a></div>
+          <div class="project-desc">
+            Autonomous Web3 security research federation: stateful invariant fuzzing, Halmos symbolic execution, and fork-state verification against live deployments. Active on Immunefi and Sherlock.
+          </div>
+          <div>
+            <span class="tag">Security</span>
+            <span class="tag">EVM / Solana</span>
+            <span class="tag">Formal Methods</span>
+          </div>
+        </div>
+
+        <div class="project-card">
+          <div class="project-title"><a href="https://github.com/Replikanti/sdlc-bench" target="_blank" rel="noopener">sdlc-bench</a></div>
+          <div class="project-desc">
+            Benchmark harness that measures the minimal (model, effort) tier per SDLC task class — SWE-bench-pattern tasks rebuilt from real merged PRs, objective verify scripts, cost-aware tier ladder.
+          </div>
+          <div>
+            <span class="tag">LLM Evaluation</span>
+            <span class="tag">Benchmarking</span>
+          </div>
+        </div>
+
+        <div class="project-card">
+          <div class="project-title"><a href="https://flowlint.dev" target="_blank" rel="noopener">FlowLint</a></div>
           <div class="project-desc">
             Open-source static analysis suite for the n8n ecosystem. AST-based linting engine with 14+ security and reliability rules. Full suite: CLI, GitHub App, Chrome Extension.
           </div>
@@ -733,17 +718,6 @@
             <span class="tag">TypeScript</span>
             <span class="tag">Open Source</span>
             <span class="tag">AST</span>
-          </div>
-        </div>
-
-        <div class="project-card">
-          <div class="project-title">AI-Assisted IaC</div>
-          <div class="project-desc">
-            Used Claude Sonnet for pair-coding and documentation in Backstage. Generated AWS CDK code and release documentation at <a href="https://www.almacareer.com/" target="_blank" rel="nofollow">Alma Career</a>.
-          </div>
-          <div>
-            <span class="tag">AI/LLM</span>
-            <span class="tag">AWS CDK</span>
           </div>
         </div>
       </div>
@@ -755,19 +729,28 @@
 
         <div class="skill-category">
           <h4>AI & Agents</h4>
+          <div class="skill-row"><span class="skill-name">Multi-Agent Federations</span> <span class="skill-val">Expert</span></div>
           <div class="skill-row"><span class="skill-name">LLM Orchestration</span> <span class="skill-val">Expert</span></div>
-          <div class="skill-row"><span class="skill-name">Multi-Agent Systems</span> <span class="skill-val">Expert</span></div>
-          <div class="skill-row"><span class="skill-name">Autonomous Agents</span> <span class="skill-val">Advanced</span></div>
-          <div class="skill-row"><span class="skill-name">LangFuse</span> <span class="skill-val">Advanced</span></div>
-          <div class="skill-row"><span class="skill-name">Linear</span> <span class="skill-val">Advanced</span></div>
+          <div class="skill-row"><span class="skill-name">Autonomous Agents</span> <span class="skill-val">Expert</span></div>
+          <div class="skill-row"><span class="skill-name">LLM CLI Automation (Claude Code)</span> <span class="skill-val">Expert</span></div>
+          <div class="skill-row"><span class="skill-name">Model & Cost Benchmarking</span> <span class="skill-val">Advanced</span></div>
         </div>
 
         <div class="skill-category">
           <h4>Development</h4>
           <div class="skill-row"><span class="skill-name">Rust</span> <span class="skill-val">Advanced</span></div>
+          <div class="skill-row"><span class="skill-name">Shell / Bash</span> <span class="skill-val">Expert</span></div>
           <div class="skill-row"><span class="skill-name">TypeScript / Node.js</span> <span class="skill-val">Advanced</span></div>
           <div class="skill-row"><span class="skill-name">Static Analysis (AST)</span> <span class="skill-val">Advanced</span></div>
           <div class="skill-row"><span class="skill-name">React</span> <span class="skill-val">Intermediate</span></div>
+        </div>
+
+        <div class="skill-category">
+          <h4>Security Research</h4>
+          <div class="skill-row"><span class="skill-name">Invariant Fuzzing (Foundry)</span> <span class="skill-val">Advanced</span></div>
+          <div class="skill-row"><span class="skill-name">Symbolic Execution (Halmos)</span> <span class="skill-val">Intermediate</span></div>
+          <div class="skill-row"><span class="skill-name">EVM / Solidity</span> <span class="skill-val">Intermediate</span></div>
+          <div class="skill-row"><span class="skill-name">Solana / SVM</span> <span class="skill-val">Intermediate</span></div>
         </div>
 
         <div class="skill-category">
@@ -800,76 +783,11 @@
 
     <section id="contact">
       <h2>Contact</h2>
-      <p>Select a meeting type and available slot.</p>
-      
-      <form id="contactForm">
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-          <div>
-            <label for="name">Name</label>
-            <input id="name" name="name" required>
-          </div>
-          <div>
-            <label for="email">Email</label>
-            <input id="email" name="email" type="email" required>
-          </div>
-        </div>
-        
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-          <div>
-             <label for="phone">Phone</label>
-             <input id="phone" name="phone" type="tel" required>
-          </div>
-          <div>
-             <label for="company">Company</label>
-             <input id="company" name="company" required>
-          </div>
-        </div>
-
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-          <div>
-            <label for="mode">Type</label>
-            <select id="mode" name="mode">
-              <option value="remote">Remote (Google Meet)</option>
-              <option value="onsite">Onsite (Prague)</option>
-            </select>
-          </div>
-          <div>
-            <label for="date">Date</label>
-            <input id="date" name="date" placeholder="Select date..." readonly required style="cursor:pointer">
-          </div>
-        </div>
-
-        <div id="onsiteGroup" class="hidden">
-           <label for="location">Location</label>
-           <input id="location" name="location" placeholder="Address...">
-           <div id="locationSuggestions" class="suggestions hidden"></div>
-        </div>
-
-        <div>
-           <label>Time Slot</label>
-           <div id="slots" class="slots"></div>
-           <input type="hidden" id="slot" name="slot" required>
-           <small id="slotHelp" style="color:var(--muted)"></small>
-        </div>
-
-        <div>
-          <label for="message">Message</label>
-          <textarea id="message" name="message" required></textarea>
-        </div>
-        
-        <input type="hidden" id="homepage" name="homepage">
-
-        <div style="display:flex; align-items:center; gap:15px;">
-           <button type="submit" class="btn">Send Message</button>
-           <span id="formStatus" style="color:var(--muted)"></span>
-        </div>
-      </form>
-      
-      <div id="formThanks" class="notice notice--success hidden" style="margin-top:20px">
-        Message sent successfully.
-      </div>
-      <div id="formError" class="notice notice--error hidden" style="margin-top:20px">
-        Error sending message. Please try again.
+      <p>The fastest way to reach me is email or LinkedIn. Based in the Prague metropolitan area, working remotely.</p>
+      <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:1.5rem;">
+        <a href="mailto:ylohnitram@gmail.com" class="btn">Email me</a>
+        <a href="https://linkedin.com/in/ylohnitram" class="btn outline" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+        <a href="https://github.com/ylohnitram" class="btn outline" target="_blank" rel="noopener noreferrer">GitHub</a>
       </div>
     </section>
 
@@ -888,206 +806,8 @@
 
   </main>
 
-  <div id="dateModal" class="modal">
-    <div class="dialog">
-      <div class="cal-head">
-        <button type="button" id="calPrev" class="btn outline" style="padding:5px 10px">&lt;</button>
-        <span id="calTitle" style="font-weight:700"></span>
-        <button type="button" id="calNext" class="btn outline" style="padding:5px 10px">&gt;</button>
-      </div>
-      <div id="calGridDOW" class="cal-grid" style="font-size:0.8rem; font-weight:700; color:var(--muted)"></div>
-      <div id="calGrid" class="cal-grid"></div>
-      <div class="cal-actions">
-        <button type="button" id="calCancel" class="btn outline" style="padding:5px 10px; font-size:0.9rem">Cancel</button>
-        <button type="button" id="calToday" class="btn outline" style="padding:5px 10px; font-size:0.9rem">Today</button>
-        <button type="button" id="calConfirm" class="btn" style="padding:5px 10px; font-size:0.9rem">Select</button>
-      </div>
-    </div>
-  </div>
-
 <script>
-  // Configuration
-  const N8N_WEBHOOK_URL = 'https://n8n.replikanti.xyz/webhook/2dd3071a-0719-40e9-99ad-e246ce174fa1';
-  const SLOTS_API = 'https://n8n.replikanti.xyz/webhook/8b1f7b37-e65d-4546-a84a-2c51e7e8cbf5';
-  
   document.querySelectorAll('.year-span').forEach(el => el.textContent = new Date().getFullYear());
-
-  // Calendar Logic
-  const dateInput = document.getElementById('date');
-  const modal = document.getElementById('dateModal');
-  const calGrid = document.getElementById('calGrid');
-  const calGridDOW = document.getElementById('calGridDOW');
-  const calTitle = document.getElementById('calTitle');
-  let view = { y: new Date().getFullYear(), m: new Date().getMonth() };
-  let pickedISO = null;
-
-  function renderCal() {
-    const first = new Date(view.y, view.m, 1);
-    const last = new Date(view.y, view.m + 1, 0);
-    calTitle.textContent = first.toLocaleString('en-US', { month: 'long', year: 'numeric' });
-    
-    // DOW
-    calGridDOW.innerHTML = '';
-    ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].forEach(d => {
-       const el = document.createElement('div'); el.textContent = d; calGridDOW.appendChild(el);
-    });
-
-    // Days
-    calGrid.innerHTML = '';
-    let start = (first.getDay() + 6) % 7;
-    for(let i=0; i<start; i++) calGrid.appendChild(document.createElement('div'));
-    
-    for(let d=1; d<=last.getDate(); d++){
-      const btn = document.createElement('div');
-      btn.className = 'cal-day';
-      btn.textContent = d;
-      const iso = `${view.y}-${String(view.m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-      btn.onclick = () => {
-         document.querySelectorAll('.cal-day').forEach(x=>x.setAttribute('aria-selected','false'));
-         btn.setAttribute('aria-selected','true');
-         pickedISO = iso;
-      };
-      if(pickedISO === iso) btn.setAttribute('aria-selected','true');
-      calGrid.appendChild(btn);
-    }
-  }
-
-  function openCal() { modal.setAttribute('open',''); renderCal(); }
-  function closeCal() { modal.removeAttribute('open'); }
-  
-  dateInput.onclick = openCal;
-  dateInput.onfocus = openCal;
-  document.getElementById('calCancel').onclick = closeCal;
-  document.getElementById('calConfirm').onclick = () => {
-    if(pickedISO) {
-       dateInput.value = pickedISO;
-       fetchSlots(pickedISO);
-    }
-    closeCal();
-  };
-  document.getElementById('calPrev').onclick = () => { if(--view.m < 0){view.m=11; view.y--;} renderCal(); };
-  document.getElementById('calNext').onclick = () => { if(++view.m > 11){view.m=0; view.y++;} renderCal(); };
-  document.getElementById('calToday').onclick = () => { 
-     const now = new Date(); view.y=now.getFullYear(); view.m=now.getMonth(); 
-     pickedISO = now.toISOString().slice(0,10);
-     renderCal();
-  };
-
-  // Slots Logic
-  async function fetchSlots(dateStr) {
-     const slotsEl = document.getElementById('slots');
-     const slotHelp = document.getElementById('slotHelp');
-     const slotInput = document.getElementById('slot');
-     const mode = document.getElementById('mode').value;
-     
-     slotsEl.innerHTML = '';
-     slotInput.value = '';
-     slotHelp.textContent = 'Loading slots...';
-     
-     try {
-       const url = `${SLOTS_API}?date=${dateStr}&mode=${mode}&duration=30&tz=${Intl.DateTimeFormat().resolvedOptions().timeZone}`;
-       const res = await fetch(url);
-       const data = await res.json();
-       
-       if(data.resolvedDate !== dateStr) {
-          slotHelp.textContent = `Selected date unavailable. Showing slots for ${data.resolvedDate}.`;
-          dateInput.value = data.resolvedDate;
-          pickedISO = data.resolvedDate;
-       } else {
-          slotHelp.textContent = '';
-       }
-
-       const slots = data.slots || [];
-       if(slots.length === 0) {
-          slotHelp.textContent = 'No slots available.';
-          return;
-       }
-
-       slots.forEach(s => {
-          const btn = document.createElement('div');
-          btn.className = 'slot';
-          btn.textContent = s.label || s.time;
-          btn.onclick = () => {
-             document.querySelectorAll('.slot').forEach(x=>x.setAttribute('aria-pressed','false'));
-             btn.setAttribute('aria-pressed','true');
-             slotInput.value = s.value || s.time;
-          };
-          slotsEl.appendChild(btn);
-       });
-
-     } catch(e) {
-        console.error(e);
-        slotHelp.textContent = 'Error loading slots.';
-     }
-  }
-  
-  document.getElementById('mode').onchange = () => {
-     const isRemote = document.getElementById('mode').value === 'remote';
-     document.getElementById('onsiteGroup').className = isRemote ? 'hidden' : '';
-     if(dateInput.value) fetchSlots(dateInput.value);
-  };
-
-  // Form Submit
-  document.getElementById('contactForm').onsubmit = async (e) => {
-    e.preventDefault();
-    const status = document.getElementById('formStatus');
-    status.textContent = 'Sending...';
-    
-    if(document.getElementById('homepage').value) return; 
-
-    const formData = new FormData(e.target);
-    const data = Object.fromEntries(formData);
-    
-    try {
-      await fetch(N8N_WEBHOOK_URL, {
-         method: 'POST',
-         headers: {'Content-Type': 'application/json'},
-         body: JSON.stringify(data)
-      });
-      e.target.reset();
-      document.getElementById('formThanks').classList.remove('hidden');
-      status.textContent = '';
-      setTimeout(() => document.getElementById('formThanks').classList.add('hidden'), 5000);
-    } catch(err) {
-      console.error(err);
-      status.textContent = '';
-      document.getElementById('formError').classList.remove('hidden');
-    }
-  };
-  
-  // Nominatim (Simplified)
-  const locIn = document.getElementById('location');
-  const locSugg = document.getElementById('locationSuggestions');
-  let locTimeout;
-  
-  locIn.oninput = (e) => {
-    clearTimeout(locTimeout);
-    const q = e.target.value;
-    if(q.length < 3) { locSugg.classList.add('hidden'); return; }
-    
-    locTimeout = setTimeout(async () => {
-       try {
-         const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${q}&countrycodes=cz&limit=3`);
-         const items = await res.json();
-         locSugg.innerHTML = '';
-         if(items.length){
-            locSugg.classList.remove('hidden');
-            items.forEach(i => {
-               const div = document.createElement('div');
-               div.className = 'suggestion-item';
-               div.style.padding='8px'; div.style.cursor='pointer'; div.style.borderBottom='1px solid var(--border)';
-               div.textContent = i.display_name;
-               div.onclick = () => { locIn.value = i.display_name; locSugg.classList.add('hidden'); };
-               locSugg.appendChild(div);
-            });
-         }
-       } catch(e){}
-    }, 400);
-  };
-  document.onclick = (e) => {
-     if(e.target !== locIn) locSugg.classList.add('hidden');
-  };
-
 </script>
 </body>
 </html>
